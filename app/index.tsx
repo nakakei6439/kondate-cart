@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import {
+  Alert,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -20,7 +21,7 @@ import {
 } from '../src/utils/weekUtils';
 
 export default function MenuScreen() {
-  const { weekKey, weekMenu, setWeekKey, loadWeekMenu, saveDayEntry, clearDayEntry } =
+  const { weekKey, weekMenu, setWeekKey, loadWeekMenu, saveDayEntry, clearDayEntry, clearWeekMenu } =
     useMenuStore();
   const { dishes, initialized, loadDishes, upsertDish } = useDishStore();
 
@@ -65,11 +66,29 @@ export default function MenuScreen() {
   const currentKey = getCurrentWeekKey();
   const isCurrentWeek = weekKey === currentKey;
 
+  const hasAnyEntry = weekMenu ? Object.keys(weekMenu.days).length > 0 : false;
+
+  function handleClearWeek() {
+    Alert.alert('献立を全削除', 'この週の献立を全て削除しますか？', [
+      { text: 'キャンセル', style: 'cancel' },
+      {
+        text: '削除',
+        style: 'destructive',
+        onPress: () => clearWeekMenu(),
+      },
+    ]);
+  }
+
   return (
     <SafeAreaView style={styles.safe}>
       {/* Large Title */}
       <View style={styles.titleArea}>
         <Text style={styles.largeTitle}>献立</Text>
+        {hasAnyEntry && (
+          <TouchableOpacity onPress={handleClearWeek} style={styles.clearWeekBtn}>
+            <Text style={styles.clearWeekBtnText}>🗑</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* ヘッダーナビ */}
@@ -130,6 +149,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   titleArea: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingTop: 16,
     paddingBottom: 4,
@@ -140,6 +162,12 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#1C1C1E',
     letterSpacing: 0.3,
+  },
+  clearWeekBtn: {
+    padding: 8,
+  },
+  clearWeekBtnText: {
+    fontSize: 22,
   },
   nav: {
     flexDirection: 'row',

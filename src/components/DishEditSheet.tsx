@@ -14,6 +14,7 @@ import {
   TouchableWithoutFeedback,
   View,
 } from 'react-native';
+import { Swipeable } from 'react-native-gesture-handler';
 import { DishRecord, Ingredient } from '../types';
 
 interface Props {
@@ -160,35 +161,60 @@ export default function DishEditSheet({ visible, dish, onSave, onDelete, onClose
             {/* 材料（グループ化スタイル） */}
             <Text style={[styles.label, { marginTop: 16 }]}>材料</Text>
             <View style={styles.ingredientGroup}>
-              {ingredients.map((ing, index) => (
-                <View key={index}>
-                  <View style={styles.ingredientRow}>
-                    <TextInput
-                      style={styles.ingredientNameInput}
-                      value={ing.name}
-                      onChangeText={(t) => updateIngredient(index, 'name', t)}
-                      placeholder="食材名"
-                      placeholderTextColor="#C7C7CC"
-                      returnKeyType="next"
-                    />
-                    <View style={styles.ingredientVerticalDivider} />
-                    <TextInput
-                      style={styles.ingredientAmountInput}
-                      value={ing.amount}
-                      onChangeText={(t) => updateIngredient(index, 'amount', t)}
-                      placeholder="量"
-                      placeholderTextColor="#C7C7CC"
-                      returnKeyType="done"
-                    />
-                    <TouchableOpacity style={styles.removeBtn} onPress={() => removeIngredient(index)}>
-                      <Text style={styles.removeBtnText}>−</Text>
-                    </TouchableOpacity>
+              {ingredients.map((ing, index) => {
+                const isFirst = index === 0;
+                const isLast = index === ingredients.length - 1;
+                const rowRadius = {
+                  borderTopLeftRadius: isFirst ? 12 : 0,
+                  borderTopRightRadius: isFirst ? 12 : 0,
+                  borderBottomLeftRadius: isLast ? 12 : 0,
+                  borderBottomRightRadius: isLast ? 12 : 0,
+                };
+                return (
+                  <View key={index}>
+                    <Swipeable
+                      renderRightActions={() => (
+                        <TouchableOpacity
+                          style={[styles.swipeDeleteBtn, {
+                            borderTopRightRadius: isFirst ? 12 : 0,
+                            borderBottomRightRadius: isLast ? 12 : 0,
+                          }]}
+                          onPress={() => {
+                            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                            removeIngredient(index);
+                          }}
+                        >
+                          <Text style={styles.swipeDeleteText}>削除</Text>
+                        </TouchableOpacity>
+                      )}
+                      overshootRight={false}
+                    >
+                      <View style={[styles.ingredientRow, rowRadius]}>
+                        <TextInput
+                          style={styles.ingredientNameInput}
+                          value={ing.name}
+                          onChangeText={(t) => updateIngredient(index, 'name', t)}
+                          placeholder="食材名"
+                          placeholderTextColor="#C7C7CC"
+                          returnKeyType="next"
+                        />
+                        <View style={styles.ingredientVerticalDivider} />
+                        <TextInput
+                          style={styles.ingredientAmountInput}
+                          value={ing.amount}
+                          onChangeText={(t) => updateIngredient(index, 'amount', t)}
+                          placeholder="量"
+                          placeholderTextColor="#C7C7CC"
+                          returnKeyType="done"
+                        />
+                      </View>
+                    </Swipeable>
+                    {index < ingredients.length - 1 && (
+                      <View style={styles.rowSeparator} />
+                    )}
                   </View>
-                  {index < ingredients.length - 1 && (
-                    <View style={styles.rowSeparator} />
-                  )}
-                </View>
-              ))}
+                );
+              })}
             </View>
 
             <TouchableOpacity style={styles.addIngredientBtn} onPress={addIngredient}>
@@ -280,15 +306,14 @@ const styles = StyleSheet.create({
     color: '#1C1C1E',
   },
   ingredientGroup: {
-    backgroundColor: '#F2F2F7',
     borderRadius: 12,
-    overflow: 'hidden',
   },
   ingredientRow: {
     flexDirection: 'row',
     alignItems: 'center',
     height: 44,
     paddingLeft: 14,
+    backgroundColor: '#F2F2F7',
   },
   ingredientNameInput: {
     flex: 2,
@@ -309,18 +334,18 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#1C1C1E',
     backgroundColor: 'transparent',
+    paddingRight: 14,
   },
-  removeBtn: {
-    width: 36,
-    height: 44,
+  swipeDeleteBtn: {
+    backgroundColor: '#FF3B30',
     justifyContent: 'center',
     alignItems: 'center',
+    width: 72,
   },
-  removeBtnText: {
-    fontSize: 20,
-    color: '#FF3B30',
-    fontWeight: '300',
-    lineHeight: 24,
+  swipeDeleteText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
   },
   rowSeparator: {
     height: StyleSheet.hairlineWidth,
