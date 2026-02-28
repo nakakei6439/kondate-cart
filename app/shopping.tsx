@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import {
+  Alert,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -14,7 +15,7 @@ import { WeekMenu } from '../src/types';
 import { getCurrentWeekKey, nextWeekKey } from '../src/utils/weekUtils';
 
 export default function ShoppingScreen() {
-  const { mode, items, setMode, generate, removeItem } = useShoppingStore();
+  const { mode, items, setMode, generate, toggleItem, removeByName } = useShoppingStore();
 
   // 買い物リストは来週・再来週が対象
   const nextWeekKey_ = nextWeekKey(getCurrentWeekKey());
@@ -38,9 +39,19 @@ export default function ShoppingScreen() {
     fetchAndGenerate(mode);
   }, [mode]);
 
-  async function handleRegenerate() {
-    await fetchAndGenerate(mode);
+  function handleRegenerate() {
+    Alert.alert(
+      'リストを再生成',
+      '献立の材料からリストを作り直します。手動で削除した項目も元に戻ります。',
+      [
+        { text: 'キャンセル', style: 'cancel' },
+        { text: '再生成する', onPress: () => fetchAndGenerate(mode) },
+      ]
+    );
   }
+
+  const uncheckedItems = items.filter((item) => !item.checked);
+  const checkedItems = items.filter((item) => item.checked);
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -74,14 +85,38 @@ export default function ShoppingScreen() {
         </View>
       ) : (
         <ScrollView style={styles.list}>
-          <Text style={styles.countText}>{items.length}品目</Text>
-          {items.map((item, index) => (
+          <Text style={styles.countText}>
+            {uncheckedItems.length}品目
+            {checkedItems.length > 0 && `（購入済み ${checkedItems.length}品目）`}
+          </Text>
+
+          {/* 未購入アイテム */}
+          {uncheckedItems.map((item) => (
             <ShoppingItemComp
-              key={`${item.name}-${index}`}
+              key={item.name}
               item={item}
-              onRemove={() => removeItem(index)}
+              onToggle={() => toggleItem(item.name)}
+              onRemove={() => removeByName(item.name)}
             />
           ))}
+
+          {/* 購入済みセクション */}
+          {checkedItems.length > 0 && (
+            <>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionHeaderText}>購入済み</Text>
+              </View>
+              {checkedItems.map((item) => (
+                <ShoppingItemComp
+                  key={item.name}
+                  item={item}
+                  onToggle={() => toggleItem(item.name)}
+                  onRemove={() => removeByName(item.name)}
+                />
+              ))}
+            </>
+          )}
+
           <View style={{ height: 100 }} />
         </ScrollView>
       )}
@@ -141,6 +176,22 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderBottomWidth: 1,
     borderBottomColor: '#F0F0F0',
+  },
+  sectionHeader: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    backgroundColor: '#F8F8F8',
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+    borderTopWidth: 1,
+    borderTopColor: '#F0F0F0',
+  },
+  sectionHeaderText: {
+    fontSize: 12,
+    color: '#AAAAAA',
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   empty: {
     flex: 1,

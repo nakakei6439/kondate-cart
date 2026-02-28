@@ -8,7 +8,8 @@ interface ShoppingState {
   items: ShoppingItem[];
   setMode: (mode: ShoppingMode) => void;
   generate: (menus: WeekMenu[]) => void;
-  removeItem: (index: number) => void;
+  toggleItem: (name: string) => void;
+  removeByName: (name: string) => void;
   regenerate: (menus: WeekMenu[]) => void;
 }
 
@@ -31,7 +32,8 @@ function aggregateIngredients(menus: WeekMenu[]): ShoppingItem[] {
 
   return Array.from(map.entries()).map(([name, amounts]) => ({
     name,
-    amount: amounts.join('、'),
+    amount: amounts.filter((a) => a.trim()).join('、'),
+    checked: false,
   }));
 }
 
@@ -46,9 +48,17 @@ export const useShoppingStore = create<ShoppingState>((set) => ({
     set({ items });
   },
 
-  removeItem: (index: number) => {
+  toggleItem: (name: string) => {
     set((state) => ({
-      items: state.items.filter((_, i) => i !== index),
+      items: state.items.map((item) =>
+        item.name === name ? { ...item, checked: !item.checked } : item
+      ),
+    }));
+  },
+
+  removeByName: (name: string) => {
+    set((state) => ({
+      items: state.items.filter((item) => item.name !== name),
     }));
   },
 

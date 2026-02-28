@@ -29,4 +29,5 @@ export interface WeekMenu {
 export interface ShoppingItem {
   name: string;
   amount: string;
+  checked: boolean;
 }
