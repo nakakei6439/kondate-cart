@@ -8,6 +8,7 @@ interface ShoppingState {
   items: ShoppingItem[];
   setMode: (mode: ShoppingMode) => void;
   generate: (menus: WeekMenu[]) => void;
+  addItem: (name: string, amount: string) => void;
   toggleItem: (name: string) => void;
   removeByName: (name: string) => void;
   regenerate: (menus: WeekMenu[]) => void;
@@ -46,6 +47,12 @@ export const useShoppingStore = create<ShoppingState>((set) => ({
   generate: (menus: WeekMenu[]) => {
     const items = aggregateIngredients(menus);
     set({ items });
+  },
+
+  addItem: (name: string, amount: string) => {
+    set((state) => ({
+      items: [{ name, amount, checked: false }, ...state.items],
+    }));
   },
 
   toggleItem: (name: string) => {

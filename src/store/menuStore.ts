@@ -9,6 +9,7 @@ interface MenuState {
   loadWeekMenu: (key: string) => Promise<void>;
   saveDayEntry: (day: DayKey, entry: DayEntry) => Promise<void>;
   clearDayEntry: (day: DayKey) => Promise<void>;
+  clearWeekMenu: () => Promise<void>;
   setWeekKey: (key: string) => void;
 }
 
@@ -41,6 +42,13 @@ export const useMenuStore = create<MenuState>((set, get) => ({
     const current = weekMenu ?? { weekKey, days: {} };
     const { [day]: _removed, ...rest } = current.days;
     const updated: WeekMenu = { ...current, days: rest };
+    await saveWeekMenu(updated);
+    set({ weekMenu: updated });
+  },
+
+  clearWeekMenu: async () => {
+    const { weekKey } = get();
+    const updated: WeekMenu = { weekKey, days: {} };
     await saveWeekMenu(updated);
     set({ weekMenu: updated });
   },

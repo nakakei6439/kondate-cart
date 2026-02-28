@@ -1,3 +1,4 @@
+import * as Haptics from 'expo-haptics';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   Alert,
@@ -13,6 +14,7 @@ import {
   TouchableWithoutFeedback,
   View,
 } from 'react-native';
+import { Swipeable } from 'react-native-gesture-handler';
 import { DayEntry, DayKey, DishRecord, Ingredient } from '../types';
 import { getDayLabel } from '../utils/weekUtils';
 
@@ -44,7 +46,6 @@ export default function DayEntrySheet({
   const [searchQuery, setSearchQuery] = useState('');
   const [showHistory, setShowHistory] = useState(false);
 
-  // アニメーション
   useEffect(() => {
     if (visible) {
       Animated.spring(slideAnim, {
@@ -62,7 +63,6 @@ export default function DayEntrySheet({
     }
   }, [visible]);
 
-  // 初期値セット
   useEffect(() => {
     if (visible) {
       isDirty.current = false;
@@ -119,6 +119,7 @@ export default function DayEntrySheet({
 
   function handleSave() {
     if (!dayKey) return;
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     const filtered = ingredients.filter((i) => i.name.trim());
     onSave(dayKey, {
       dishName: dishName.trim(),
@@ -137,6 +138,7 @@ export default function DayEntrySheet({
         text: '削除',
         style: 'destructive',
         onPress: () => {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
           onClear(dayKey);
           onClose();
         },
@@ -167,21 +169,17 @@ export default function DayEntrySheet({
 
   return (
     <Modal transparent animationType="none" visible={visible} onRequestClose={handleClose}>
-      {/* 背景タップで閉じる */}
       <TouchableWithoutFeedback onPress={handleClose}>
         <View style={styles.overlay} />
       </TouchableWithoutFeedback>
 
-      {/* KeyboardAvoidingView でシート全体を上に押し上げる */}
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.kavContainer}
       >
         <Animated.View style={[styles.sheet, { transform: [{ translateY: slideAnim }] }]}>
-          {/* ハンドル */}
           <View style={styles.handle} />
 
-          {/* ヘッダー */}
           <View style={styles.header}>
             <Text style={styles.headerTitle}>
               {dayKey ? getDayLabel(dayKey) + '曜日の献立' : ''}
@@ -209,7 +207,7 @@ export default function DayEntrySheet({
                   markDirty();
                 }}
                 placeholder="例: 肉じゃが"
-                placeholderTextColor="#BBBBBB"
+                placeholderTextColor="#C7C7CC"
                 returnKeyType="done"
               />
               <TouchableOpacity
@@ -238,34 +236,64 @@ export default function DayEntrySheet({
               </View>
             )}
 
-            {/* 材料 */}
+            {/* 材料（グループ化スタイル） */}
             <Text style={[styles.label, { marginTop: 16 }]}>材料</Text>
-            {ingredients.map((ing, index) => (
-              <View key={index} style={styles.ingredientRow}>
-                <TextInput
-                  style={[styles.ingredientInput, styles.ingredientName]}
-                  value={ing.name}
-                  onChangeText={(t) => updateIngredient(index, 'name', t)}
-                  placeholder="食材名"
-                  placeholderTextColor="#BBBBBB"
-                  returnKeyType="next"
-                />
-                <TextInput
-                  style={[styles.ingredientInput, styles.ingredientAmount]}
-                  value={ing.amount}
-                  onChangeText={(t) => updateIngredient(index, 'amount', t)}
-                  placeholder="量"
-                  placeholderTextColor="#BBBBBB"
-                  returnKeyType="done"
-                />
-                <TouchableOpacity
-                  style={styles.removeBtn}
-                  onPress={() => removeIngredient(index)}
-                >
-                  <Text style={styles.removeBtnText}>−</Text>
-                </TouchableOpacity>
-              </View>
-            ))}
+            <View style={styles.ingredientGroup}>
+              {ingredients.map((ing, index) => {
+                const isFirst = index === 0;
+                const isLast = index === ingredients.length - 1;
+                const rowRadius = {
+                  borderTopLeftRadius: isFirst ? 12 : 0,
+                  borderTopRightRadius: isFirst ? 12 : 0,
+                  borderBottomLeftRadius: isLast ? 12 : 0,
+                  borderBottomRightRadius: isLast ? 12 : 0,
+                };
+                return (
+                  <View key={index}>
+                    <Swipeable
+                      renderRightActions={() => (
+                        <TouchableOpacity
+                          style={[styles.swipeDeleteBtn, {
+                            borderTopRightRadius: isFirst ? 12 : 0,
+                            borderBottomRightRadius: isLast ? 12 : 0,
+                          }]}
+                          onPress={() => {
+                            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                            removeIngredient(index);
+                          }}
+                        >
+                          <Text style={styles.swipeDeleteText}>削除</Text>
+                        </TouchableOpacity>
+                      )}
+                      overshootRight={false}
+                    >
+                      <View style={[styles.ingredientRow, rowRadius]}>
+                        <TextInput
+                          style={styles.ingredientNameInput}
+                          value={ing.name}
+                          onChangeText={(t) => updateIngredient(index, 'name', t)}
+                          placeholder="食材名"
+                          placeholderTextColor="#C7C7CC"
+                          returnKeyType="next"
+                        />
+                        <View style={styles.ingredientVerticalDivider} />
+                        <TextInput
+                          style={styles.ingredientAmountInput}
+                          value={ing.amount}
+                          onChangeText={(t) => updateIngredient(index, 'amount', t)}
+                          placeholder="量"
+                          placeholderTextColor="#C7C7CC"
+                          returnKeyType="done"
+                        />
+                      </View>
+                    </Swipeable>
+                    {index < ingredients.length - 1 && (
+                      <View style={styles.rowSeparator} />
+                    )}
+                  </View>
+                );
+              })}
+            </View>
 
             <TouchableOpacity style={styles.addIngredientBtn} onPress={addIngredient}>
               <Text style={styles.addIngredientText}>＋ 材料を追加</Text>
@@ -278,14 +306,13 @@ export default function DayEntrySheet({
               value={note}
               onChangeText={(t) => { setNote(t); markDirty(); }}
               placeholder="例: 外食、残り物など"
-              placeholderTextColor="#BBBBBB"
+              placeholderTextColor="#C7C7CC"
               returnKeyType="done"
             />
 
             <View style={{ height: 24 }} />
           </ScrollView>
 
-          {/* フッターボタン */}
           <View style={styles.footer}>
             {initialEntry && (
               <TouchableOpacity style={styles.clearBtn} onPress={handleClear}>
@@ -325,10 +352,10 @@ const styles = StyleSheet.create({
     elevation: 10,
   },
   handle: {
-    width: 40,
-    height: 4,
-    backgroundColor: '#DDDDDD',
-    borderRadius: 2,
+    width: 36,
+    height: 5,
+    backgroundColor: '#E0E0E0',
+    borderRadius: 3,
     alignSelf: 'center',
     marginTop: 10,
     marginBottom: 4,
@@ -339,29 +366,24 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#C6C6C8',
   },
   headerTitle: {
     fontSize: 17,
     fontWeight: '600',
-    color: '#333333',
+    color: '#1C1C1E',
   },
-  closeBtn: {
-    padding: 4,
-  },
-  closeBtnText: {
-    fontSize: 18,
-    color: '#999999',
-  },
+  closeBtn: { padding: 4 },
+  closeBtnText: { fontSize: 18, color: '#8E8E93' },
   body: {
     paddingHorizontal: 20,
     paddingTop: 16,
   },
   label: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '600',
-    color: '#888888',
+    color: '#8E8E93',
     marginBottom: 6,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -373,16 +395,16 @@ const styles = StyleSheet.create({
   dishNameInput: {
     flex: 1,
     height: 44,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#F2F2F7',
     borderRadius: 10,
     paddingHorizontal: 14,
     fontSize: 16,
-    color: '#333333',
+    color: '#1C1C1E',
   },
   historyBtn: {
     height: 44,
     paddingHorizontal: 14,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#FFF4EE',
     borderRadius: 10,
     justifyContent: 'center',
   },
@@ -394,62 +416,77 @@ const styles = StyleSheet.create({
   historyList: {
     marginTop: 6,
     backgroundColor: '#FFFFFF',
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#EEEEEE',
+    borderRadius: 12,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: '#C6C6C8',
     overflow: 'hidden',
   },
   historyItem: {
     paddingHorizontal: 14,
     paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F5F5F5',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#E5E5EA',
   },
   historyItemText: {
     fontSize: 15,
-    color: '#333333',
+    color: '#1C1C1E',
     fontWeight: '500',
   },
   historyItemSub: {
     fontSize: 12,
-    color: '#999999',
+    color: '#8E8E93',
     marginTop: 2,
+  },
+  // グループ化材料スタイル
+  ingredientGroup: {
+    borderRadius: 12,
   },
   ingredientRow: {
     flexDirection: 'row',
-    gap: 8,
-    marginBottom: 8,
     alignItems: 'center',
+    height: 44,
+    paddingLeft: 14,
+    backgroundColor: '#F2F2F7',
   },
-  ingredientInput: {
-    height: 40,
-    backgroundColor: '#F5F5F5',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    fontSize: 15,
-    color: '#333333',
-  },
-  ingredientName: {
+  ingredientNameInput: {
     flex: 2,
+    height: 44,
+    fontSize: 15,
+    color: '#1C1C1E',
+    backgroundColor: 'transparent',
   },
-  ingredientAmount: {
+  ingredientVerticalDivider: {
+    width: StyleSheet.hairlineWidth,
+    height: 20,
+    backgroundColor: '#C6C6C8',
+    marginHorizontal: 8,
+  },
+  ingredientAmountInput: {
     flex: 1,
+    height: 44,
+    fontSize: 15,
+    color: '#1C1C1E',
+    backgroundColor: 'transparent',
+    paddingRight: 14,
   },
-  removeBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#FFE5E5',
+  swipeDeleteBtn: {
+    backgroundColor: '#FF3B30',
     justifyContent: 'center',
     alignItems: 'center',
+    width: 72,
   },
-  removeBtnText: {
-    fontSize: 18,
-    color: '#FF4444',
-    lineHeight: 20,
+  swipeDeleteText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  rowSeparator: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: '#C6C6C8',
+    marginLeft: 14,
   },
   addIngredientBtn: {
-    paddingVertical: 10,
+    paddingVertical: 12,
     alignItems: 'center',
   },
   addIngredientText: {
@@ -459,11 +496,11 @@ const styles = StyleSheet.create({
   },
   noteInput: {
     height: 44,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#F2F2F7',
     borderRadius: 10,
     paddingHorizontal: 14,
     fontSize: 15,
-    color: '#333333',
+    color: '#1C1C1E',
   },
   footer: {
     flexDirection: 'row',
@@ -471,20 +508,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     paddingBottom: 34,
-    borderTopWidth: 1,
-    borderTopColor: '#F0F0F0',
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: '#C6C6C8',
   },
   clearBtn: {
     flex: 1,
     height: 50,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#F2F2F7',
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
   },
   clearBtnText: {
     fontSize: 16,
-    color: '#FF4444',
+    color: '#FF3B30',
     fontWeight: '600',
   },
   saveBtn: {
@@ -494,6 +531,11 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: '#E8692A',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 4,
   },
   saveBtnText: {
     fontSize: 16,
