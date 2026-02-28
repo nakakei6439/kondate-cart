@@ -63,7 +63,7 @@ export default function MenuScreen() {
     [clearDayEntry]
   );
 
-  const currentKey = getCurrentWeekKey();
+  const currentKey = nextWeekKey(getCurrentWeekKey());
   const isCurrentWeek = weekKey === currentKey;
 
   const hasAnyEntry = weekMenu ? Object.keys(weekMenu.days).length > 0 : false;
@@ -106,7 +106,7 @@ export default function MenuScreen() {
         >
           <Text style={styles.weekTitle}>{formatWeekTitle(weekKey)}</Text>
           {!isCurrentWeek && (
-            <Text style={styles.todayHint}>今週に戻る</Text>
+            <Text style={styles.todayHint}>来週に戻る</Text>
           )}
         </TouchableOpacity>
 

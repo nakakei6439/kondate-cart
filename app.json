@@ -5,13 +5,31 @@
     "scheme": "menu",
     "version": "1.0.0",
     "orientation": "portrait",
-    "platforms": ["ios"],
+    "platforms": [
+      "ios"
+    ],
     "ios": {
       "supportsTablet": false
     },
-    "plugins": ["expo-router"],
+    "plugins": [
+      "expo-router",
+      "expo-updates"
+    ],
+    "runtimeVersion": {
+      "policy": "sdkVersion"
+    },
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "5e388935-41f6-41f6-a6f2-0dc90ef05840"
+      }
+    },
+    "owner": "nakakei6439",
+    "updates": {
+      "url": "https://u.expo.dev/5e388935-41f6-41f6-a6f2-0dc90ef05840"
+    },
   }
 }
