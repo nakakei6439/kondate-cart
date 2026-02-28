@@ -14,6 +14,7 @@ interface MenuState {
 }
 
 export const useMenuStore = create<MenuState>((set, get) => ({
+  // デフォルトは来週（買い物計画は来週分を先に立てるため）
   weekKey: nextWeekKey(getCurrentWeekKey()),
   weekMenu: null,
 

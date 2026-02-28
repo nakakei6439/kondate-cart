@@ -11,7 +11,6 @@ interface ShoppingState {
   addItem: (name: string, amount: string) => void;
   toggleItem: (name: string) => void;
   removeByName: (name: string) => void;
-  regenerate: (menus: WeekMenu[]) => void;
 }
 
 function aggregateIngredients(menus: WeekMenu[]): ShoppingItem[] {
@@ -69,8 +68,4 @@ export const useShoppingStore = create<ShoppingState>((set) => ({
     }));
   },
 
-  regenerate: (menus: WeekMenu[]) => {
-    const items = aggregateIngredients(menus);
-    set({ items });
-  },
 }));

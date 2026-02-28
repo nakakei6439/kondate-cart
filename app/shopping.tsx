@@ -26,12 +26,13 @@ export default function ShoppingScreen() {
   const [newItemName, setNewItemName] = useState('');
   const [newItemAmount, setNewItemAmount] = useState('');
 
-  const nextWeekKey_ = nextWeekKey(getCurrentWeekKey());
-  const weekAfterNextKey = nextWeekKey(nextWeekKey_);
+  // 来週・再来週のキー（買い物リストの対象週）
+  const upcomingWeekKey = nextWeekKey(getCurrentWeekKey());
+  const weekAfterNextKey = nextWeekKey(upcomingWeekKey);
 
   async function fetchAndGenerate(selectedMode: typeof mode) {
     const menus: WeekMenu[] = [];
-    const nextMenu = await loadWeekMenu(nextWeekKey_);
+    const nextMenu = await loadWeekMenu(upcomingWeekKey);
     if (nextMenu) menus.push(nextMenu);
     if (selectedMode === 'twoWeeks') {
       const weekAfterNextMenu = await loadWeekMenu(weekAfterNextKey);
@@ -145,6 +146,7 @@ export default function ShoppingScreen() {
             </>
           )}
 
+          {/* フッター（再生成ボタン）の高さ分の余白 */}
           <View style={{ height: 100 }} />
         </ScrollView>
       )}

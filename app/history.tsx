@@ -58,6 +58,7 @@ function DishRow({
   const swipeRef = useRef<Swipeable>(null);
 
   function renderRightActions(progress: Animated.AnimatedInterpolation<number>) {
+    // 80 は styles.deleteAction.width と合わせる必要あり
     const translateX = progress.interpolate({
       inputRange: [0, 1],
       outputRange: [80, 0],

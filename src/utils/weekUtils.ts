@@ -77,12 +77,6 @@ export function nextWeekKey(weekKey: string): string {
   return getWeekKey(nextMon);
 }
 
-/** 現在週以降か判定（買い物リスト用） */
-export function isCurrentWeekOrFuture(weekKey: string): boolean {
-  const currentKey = getWeekKey(new Date());
-  return weekKey >= currentKey;
-}
-
 /** 今週の weekKey */
 export function getCurrentWeekKey(): string {
   return getWeekKey(new Date());
