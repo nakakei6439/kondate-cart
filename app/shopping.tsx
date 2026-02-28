@@ -17,21 +17,17 @@ import { getCurrentWeekKey, nextWeekKey } from '../src/utils/weekUtils';
 export default function ShoppingScreen() {
   const { mode, items, setMode, generate, toggleItem, removeByName } = useShoppingStore();
 
-  // 買い物リストは来週・再来週が対象
   const nextWeekKey_ = nextWeekKey(getCurrentWeekKey());
   const weekAfterNextKey = nextWeekKey(nextWeekKey_);
 
   async function fetchAndGenerate(selectedMode: typeof mode) {
     const menus: WeekMenu[] = [];
-
     const nextMenu = await loadWeekMenu(nextWeekKey_);
     if (nextMenu) menus.push(nextMenu);
-
     if (selectedMode === 'twoWeeks') {
       const weekAfterNextMenu = await loadWeekMenu(weekAfterNextKey);
       if (weekAfterNextMenu) menus.push(weekAfterNextMenu);
     }
-
     generate(menus);
   }
 
@@ -55,6 +51,11 @@ export default function ShoppingScreen() {
 
   return (
     <SafeAreaView style={styles.safe}>
+      {/* Large Title */}
+      <View style={styles.titleArea}>
+        <Text style={styles.largeTitle}>買い物リスト</Text>
+      </View>
+
       {/* モード切替 */}
       <View style={styles.segmentRow}>
         <TouchableOpacity
@@ -80,8 +81,11 @@ export default function ShoppingScreen() {
           <Text style={styles.emptyEmoji}>🛒</Text>
           <Text style={styles.emptyTitle}>材料がありません</Text>
           <Text style={styles.emptyDesc}>
-            献立タブで料理と材料を登録すると{'\n'}ここに自動で追加されます
+            献立タブで来週の料理と{'\n'}材料を登録してください
           </Text>
+          <View style={styles.emptyHint}>
+            <Text style={styles.emptyHintText}>🍽️  献立タブから登録できます</Text>
+          </View>
         </View>
       ) : (
         <ScrollView style={styles.list}>
@@ -90,7 +94,6 @@ export default function ShoppingScreen() {
             {checkedItems.length > 0 && `（購入済み ${checkedItems.length}品目）`}
           </Text>
 
-          {/* 未購入アイテム */}
           {uncheckedItems.map((item) => (
             <ShoppingItemComp
               key={item.name}
@@ -100,7 +103,6 @@ export default function ShoppingScreen() {
             />
           ))}
 
-          {/* 購入済みセクション */}
           {checkedItems.length > 0 && (
             <>
               <View style={styles.sectionHeader}>
@@ -121,7 +123,6 @@ export default function ShoppingScreen() {
         </ScrollView>
       )}
 
-      {/* 再生成ボタン */}
       <View style={styles.footer}>
         <TouchableOpacity style={styles.regenerateBtn} onPress={handleRegenerate}>
           <Text style={styles.regenerateBtnText}>↺  再生成</Text>
@@ -134,12 +135,25 @@ export default function ShoppingScreen() {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F2F2F7',
+  },
+  titleArea: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 4,
+    backgroundColor: '#F2F2F7',
+  },
+  largeTitle: {
+    fontSize: 34,
+    fontWeight: '700',
+    color: '#1C1C1E',
+    letterSpacing: 0.3,
   },
   segmentRow: {
     flexDirection: 'row',
-    margin: 16,
-    backgroundColor: '#F0F0F0',
+    marginHorizontal: 16,
+    marginVertical: 12,
+    backgroundColor: '#E0E0E5',
     borderRadius: 10,
     padding: 3,
   },
@@ -163,7 +177,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   segmentTextActive: {
-    color: '#333333',
+    color: '#1C1C1E',
     fontWeight: '600',
   },
   list: {
@@ -171,24 +185,18 @@ const styles = StyleSheet.create({
   },
   countText: {
     fontSize: 13,
-    color: '#888888',
+    color: '#8E8E93',
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
   },
   sectionHeader: {
     paddingHorizontal: 16,
-    paddingVertical: 8,
-    backgroundColor: '#F8F8F8',
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
-    borderTopWidth: 1,
-    borderTopColor: '#F0F0F0',
+    paddingVertical: 6,
+    marginTop: 8,
   },
   sectionHeaderText: {
-    fontSize: 12,
-    color: '#AAAAAA',
+    fontSize: 13,
+    color: '#8E8E93',
     fontWeight: '600',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -198,22 +206,35 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingBottom: 80,
+    paddingHorizontal: 32,
   },
   emptyEmoji: {
-    fontSize: 48,
+    fontSize: 56,
     marginBottom: 16,
   },
   emptyTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '600',
-    color: '#333333',
+    color: '#1C1C1E',
     marginBottom: 8,
   },
   emptyDesc: {
-    fontSize: 14,
-    color: '#888888',
+    fontSize: 15,
+    color: '#8E8E93',
     textAlign: 'center',
     lineHeight: 22,
+  },
+  emptyHint: {
+    marginTop: 20,
+    backgroundColor: '#FFF4EE',
+    borderRadius: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+  },
+  emptyHintText: {
+    fontSize: 14,
+    color: '#E8692A',
+    fontWeight: '500',
   },
   footer: {
     position: 'absolute',
@@ -223,15 +244,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 34,
     paddingTop: 12,
-    backgroundColor: '#FFFFFF',
-    borderTopWidth: 1,
-    borderTopColor: '#F0F0F0',
+    backgroundColor: '#F2F2F7',
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: '#C6C6C8',
   },
   regenerateBtn: {
     backgroundColor: '#E8692A',
-    borderRadius: 12,
-    paddingVertical: 14,
+    borderRadius: 14,
+    paddingVertical: 15,
     alignItems: 'center',
+    shadowColor: '#E8692A',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 4,
   },
   regenerateBtnText: {
     fontSize: 16,

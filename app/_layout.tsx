@@ -1,6 +1,6 @@
+import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { Text } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 export default function Layout() {
@@ -20,7 +20,7 @@ export default function Layout() {
           options={{
             tabBarLabel: '献立',
             tabBarIcon: ({ color }) => (
-              <Text style={{ fontSize: 20, color }}>🍽️</Text>
+              <Ionicons name="restaurant-outline" size={22} color={color} />
             ),
           }}
         />
@@ -29,7 +29,7 @@ export default function Layout() {
           options={{
             tabBarLabel: '買い物',
             tabBarIcon: ({ color }) => (
-              <Text style={{ fontSize: 20, color }}>🛒</Text>
+              <Ionicons name="cart-outline" size={22} color={color} />
             ),
           }}
         />
@@ -38,7 +38,7 @@ export default function Layout() {
           options={{
             tabBarLabel: '履歴',
             tabBarIcon: ({ color }) => (
-              <Text style={{ fontSize: 20, color }}>📋</Text>
+              <Ionicons name="time-outline" size={22} color={color} />
             ),
           }}
         />

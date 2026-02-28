@@ -67,6 +67,11 @@ export default function MenuScreen() {
 
   return (
     <SafeAreaView style={styles.safe}>
+      {/* Large Title */}
+      <View style={styles.titleArea}>
+        <Text style={styles.largeTitle}>献立</Text>
+      </View>
+
       {/* ヘッダーナビ */}
       <View style={styles.nav}>
         <TouchableOpacity
@@ -123,6 +128,18 @@ const styles = StyleSheet.create({
   safe: {
     flex: 1,
     backgroundColor: '#FFFFFF',
+  },
+  titleArea: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 4,
+    backgroundColor: '#FFFFFF',
+  },
+  largeTitle: {
+    fontSize: 34,
+    fontWeight: '700',
+    color: '#1C1C1E',
+    letterSpacing: 0.3,
   },
   nav: {
     flexDirection: 'row',

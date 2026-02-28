@@ -1,4 +1,5 @@
-import React, { useRef } from 'react';
+import * as Haptics from 'expo-haptics';
+import React, { useEffect, useRef } from 'react';
 import { Animated, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Swipeable } from 'react-native-gesture-handler';
 import { ShoppingItem as ShoppingItemType } from '../types';
@@ -11,6 +12,21 @@ interface Props {
 
 export default function ShoppingItem({ item, onToggle, onRemove }: Props) {
   const swipeRef = useRef<Swipeable>(null);
+  const scaleAnim = useRef(new Animated.Value(item.checked ? 1 : 0)).current;
+
+  useEffect(() => {
+    Animated.spring(scaleAnim, {
+      toValue: item.checked ? 1 : 0,
+      tension: 200,
+      friction: 8,
+      useNativeDriver: true,
+    }).start();
+  }, [item.checked]);
+
+  function handleToggle() {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    onToggle();
+  }
 
   function renderRightActions(progress: Animated.AnimatedInterpolation<number>) {
     const translateX = progress.interpolate({
@@ -22,6 +38,7 @@ export default function ShoppingItem({ item, onToggle, onRemove }: Props) {
         <TouchableOpacity
           style={styles.deleteBtn}
           onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
             swipeRef.current?.close();
             onRemove();
           }}
@@ -33,55 +50,69 @@ export default function ShoppingItem({ item, onToggle, onRemove }: Props) {
   }
 
   return (
-    <Swipeable ref={swipeRef} renderRightActions={renderRightActions} friction={2} overshootRight={false}>
-      <TouchableOpacity
-        style={[styles.container, item.checked && styles.containerChecked]}
-        onPress={onToggle}
-        activeOpacity={0.7}
-      >
-        {/* チェックマーク */}
-        <View style={[styles.checkCircle, item.checked && styles.checkCircleChecked]}>
-          {item.checked && <Text style={styles.checkMark}>✓</Text>}
-        </View>
+    <View style={styles.cardWrapper}>
+      <Swipeable ref={swipeRef} renderRightActions={renderRightActions} friction={2} overshootRight={false}>
+        <TouchableOpacity
+          style={[styles.container, item.checked && styles.containerChecked]}
+          onPress={handleToggle}
+          activeOpacity={0.7}
+        >
+          {/* チェックサークル */}
+          <View style={[styles.checkCircle, item.checked && styles.checkCircleChecked]}>
+            <Animated.Text style={[styles.checkMark, { transform: [{ scale: scaleAnim }] }]}>
+              ✓
+            </Animated.Text>
+          </View>
 
-        {/* テキスト */}
-        <View style={styles.textContainer}>
-          <Text style={[styles.name, item.checked && styles.nameChecked]}>{item.name}</Text>
-          {item.amount ? (
-            <Text style={[styles.amount, item.checked && styles.amountChecked]}>{item.amount}</Text>
-          ) : null}
-        </View>
-      </TouchableOpacity>
-    </Swipeable>
+          {/* テキスト */}
+          <View style={styles.textContainer}>
+            <Text style={[styles.name, item.checked && styles.nameChecked]}>{item.name}</Text>
+            {item.amount ? (
+              <Text style={[styles.amount, item.checked && styles.amountChecked]}>{item.amount}</Text>
+            ) : null}
+          </View>
+        </TouchableOpacity>
+      </Swipeable>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  cardWrapper: {
+    marginHorizontal: 12,
+    marginVertical: 4,
+    borderRadius: 12,
+    backgroundColor: '#FFFFFF',
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 2,
+  },
   container: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
     paddingHorizontal: 16,
     paddingVertical: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
   },
   containerChecked: {
     backgroundColor: '#FAFAFA',
   },
   checkCircle: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    width: 26,
+    height: 26,
+    borderRadius: 13,
     borderWidth: 2,
-    borderColor: '#DDDDDD',
+    borderColor: '#D1D1D6',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
   },
   checkCircleChecked: {
-    backgroundColor: '#4CAF50',
-    borderColor: '#4CAF50',
+    backgroundColor: '#34C759',
+    borderColor: '#34C759',
   },
   checkMark: {
     fontSize: 13,
@@ -94,20 +125,20 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 16,
-    color: '#333333',
+    color: '#1C1C1E',
     fontWeight: '500',
   },
   nameChecked: {
-    color: '#AAAAAA',
+    color: '#AEAEB2',
     textDecorationLine: 'line-through',
   },
   amount: {
     fontSize: 13,
-    color: '#888888',
+    color: '#8E8E93',
     marginTop: 2,
   },
   amountChecked: {
-    color: '#CCCCCC',
+    color: '#C7C7CC',
   },
   deleteAction: {
     width: 80,
@@ -116,7 +147,7 @@ const styles = StyleSheet.create({
   },
   deleteBtn: {
     flex: 1,
-    backgroundColor: '#FF4444',
+    backgroundColor: '#FF3B30',
     justifyContent: 'center',
     alignItems: 'center',
   },
