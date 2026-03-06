@@ -1,5 +1,5 @@
 {
-  "name": "weekly-dinner-menu",
+  "name": "kondate-cart",
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
