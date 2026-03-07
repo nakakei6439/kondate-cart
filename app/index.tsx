@@ -81,14 +81,20 @@ export default function MenuScreen() {
 
   return (
     <SafeAreaView style={styles.safe}>
-      {/* Large Title */}
+      {/* Header */}
       <View style={styles.titleArea}>
-        <Text style={styles.largeTitle}>献立</Text>
-        {hasAnyEntry && (
-          <TouchableOpacity onPress={handleClearWeek} style={styles.clearWeekBtn}>
-            <Text style={styles.clearWeekBtnText}>🗑</Text>
-          </TouchableOpacity>
-        )}
+        <View style={styles.titleSpacer} />
+        <View style={styles.titleCenter}>
+          <Text style={styles.appTitle}>献立カート</Text>
+          <Text style={styles.appSubtitle}>週の献立を計画しよう</Text>
+        </View>
+        <View style={styles.titleRight}>
+          {hasAnyEntry && (
+            <TouchableOpacity onPress={handleClearWeek} style={styles.clearWeekBtn}>
+              <Text style={styles.clearWeekBtnText}>🗑</Text>
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
 
       {/* ヘッダーナビ */}
@@ -158,11 +164,28 @@ const styles = StyleSheet.create({
     paddingBottom: 4,
     backgroundColor: '#FFFFFF',
   },
-  largeTitle: {
-    fontSize: 34,
+  titleSpacer: {
+    width: 44,
+  },
+  titleCenter: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  appTitle: {
+    fontSize: 20,
     fontWeight: '700',
-    color: '#1C1C1E',
+    color: '#E8692A',
+    letterSpacing: 0.5,
+  },
+  appSubtitle: {
+    fontSize: 11,
+    color: '#AAAAAA',
+    marginTop: 1,
     letterSpacing: 0.3,
+  },
+  titleRight: {
+    width: 44,
+    alignItems: 'flex-end',
   },
   clearWeekBtn: {
     padding: 8,

@@ -21,7 +21,7 @@ import { WeekMenu } from '../src/types';
 import { getCurrentWeekKey, nextWeekKey } from '../src/utils/weekUtils';
 
 export default function ShoppingScreen() {
-  const { mode, items, setMode, generate, addItem, toggleItem, removeByName } = useShoppingStore();
+  const { mode, items, setMode, generate, forceGenerate, addItem, toggleItem, removeByName } = useShoppingStore();
   const { showAd } = useInterstitialAd();
 
   const [showAddModal, setShowAddModal] = useState(false);
@@ -32,7 +32,7 @@ export default function ShoppingScreen() {
   const upcomingWeekKey = nextWeekKey(getCurrentWeekKey());
   const weekAfterNextKey = nextWeekKey(upcomingWeekKey);
 
-  async function fetchAndGenerate(selectedMode: typeof mode) {
+  async function fetchAndGenerate(selectedMode: typeof mode, force = false) {
     const menus: WeekMenu[] = [];
     const nextMenu = await loadWeekMenu(upcomingWeekKey);
     if (nextMenu) menus.push(nextMenu);
@@ -40,7 +40,8 @@ export default function ShoppingScreen() {
       const weekAfterNextMenu = await loadWeekMenu(weekAfterNextKey);
       if (weekAfterNextMenu) menus.push(weekAfterNextMenu);
     }
-    generate(menus);
+    if (force) forceGenerate(menus);
+    else generate(menus);
   }
 
   useEffect(() => {
@@ -67,7 +68,7 @@ export default function ShoppingScreen() {
       '献立の材料からリストを作り直します。手動で削除した項目も元に戻ります。',
       [
         { text: 'キャンセル', style: 'cancel' },
-        { text: '再生成する', onPress: () => showAd(() => fetchAndGenerate(mode)) },
+        { text: '再生成する', onPress: () => showAd(() => fetchAndGenerate(mode, true)) },
       ]
     );
   }

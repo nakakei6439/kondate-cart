@@ -1,5 +1,5 @@
 import * as Haptics from 'expo-haptics';
-import React from 'react';
+import React, { useRef } from 'react';
 import { Animated, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Swipeable } from 'react-native-gesture-handler';
 import { DayKey, WeekMenu } from '../types';
@@ -14,6 +14,7 @@ interface Props {
 
 export default function WeekCalendar({ weekKey, weekMenu, onDayPress, onDayDelete }: Props) {
   const dates = getWeekDates(weekKey);
+  const swipeRefs = useRef<Map<DayKey, Swipeable | null>>(new Map());
 
   function renderRightActions(
     progress: Animated.AnimatedInterpolation<number>,
@@ -29,6 +30,7 @@ export default function WeekCalendar({ weekKey, weekMenu, onDayPress, onDayDelet
           style={styles.deleteBtn}
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+            swipeRefs.current.get(dayKey)?.close();
             onDayDelete?.(dayKey);
           }}
         >
@@ -48,6 +50,7 @@ export default function WeekCalendar({ weekKey, weekMenu, onDayPress, onDayDelet
         return (
           <Swipeable
             key={dayKey}
+            ref={(ref) => swipeRefs.current.set(dayKey, ref)}
             renderRightActions={(progress) => renderRightActions(progress, dayKey)}
             enabled={!!entry && !!onDayDelete}
             friction={2}
