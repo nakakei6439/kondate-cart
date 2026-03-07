@@ -9,11 +9,22 @@
       "ios"
     ],
     "ios": {
-      "supportsTablet": false
+      "supportsTablet": false,
+      "bundleIdentifier": "com.nakakei6439.kondatecart",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "plugins": [
       "expo-router",
-      "expo-updates"
+      "expo-updates",
+      [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId": "ca-app-pub-xxxxxxxxxxxxxxxx~xxxxxxxxxx",
+          "iosAppId": "ca-app-pub-6037843763000573~3751863813"
+        }
+      ]
     ],
     "runtimeVersion": {
       "policy": "sdkVersion"
@@ -24,12 +35,9 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "5e388935-41f6-41f6-a6f2-0dc90ef05840"
+        "projectId": "09de0c14-0ba0-48e3-b88e-75ba1a52a4c4"
       }
     },
-    "owner": "nakakei6439",
-    "updates": {
-      "url": "https://u.expo.dev/5e388935-41f6-41f6-a6f2-0dc90ef05840"
-    },
+    "owner": "nakakei6439"
   }
 }

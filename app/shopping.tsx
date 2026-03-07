@@ -14,6 +14,7 @@ import {
   View,
 } from 'react-native';
 import ShoppingItemComp from '../src/components/ShoppingItem';
+import { useInterstitialAd } from '../src/hooks/useInterstitialAd';
 import { useShoppingStore } from '../src/store/shoppingStore';
 import { loadWeekMenu } from '../src/storage/menuStorage';
 import { WeekMenu } from '../src/types';
@@ -21,6 +22,7 @@ import { getCurrentWeekKey, nextWeekKey } from '../src/utils/weekUtils';
 
 export default function ShoppingScreen() {
   const { mode, items, setMode, generate, addItem, toggleItem, removeByName } = useShoppingStore();
+  const { showAd } = useInterstitialAd();
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [newItemName, setNewItemName] = useState('');
@@ -65,7 +67,7 @@ export default function ShoppingScreen() {
       '献立の材料からリストを作り直します。手動で削除した項目も元に戻ります。',
       [
         { text: 'キャンセル', style: 'cancel' },
-        { text: '再生成する', onPress: () => fetchAndGenerate(mode) },
+        { text: '再生成する', onPress: () => showAd(() => fetchAndGenerate(mode)) },
       ]
     );
   }
