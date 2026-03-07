@@ -44,8 +44,18 @@ export const useShoppingStore = create<ShoppingState>((set) => ({
   setMode: (mode) => set({ mode }),
 
   generate: (menus: WeekMenu[]) => {
-    const items = aggregateIngredients(menus);
-    set({ items });
+    set((state) => {
+      const newItems = aggregateIngredients(menus);
+      const checkedNames = new Set(
+        state.items.filter((i) => i.checked).map((i) => i.name)
+      );
+      return {
+        items: newItems.map((item) => ({
+          ...item,
+          checked: checkedNames.has(item.name),
+        })),
+      };
+    });
   },
 
   addItem: (name: string, amount: string) => {

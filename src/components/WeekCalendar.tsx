@@ -1,5 +1,7 @@
+import * as Haptics from 'expo-haptics';
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { Animated, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { Swipeable } from 'react-native-gesture-handler';
 import { DayKey, WeekMenu } from '../types';
 import { DAY_KEYS, getDayLabel, getWeekDates } from '../utils/weekUtils';
 
@@ -7,10 +9,34 @@ interface Props {
   weekKey: string;
   weekMenu: WeekMenu | null;
   onDayPress: (day: DayKey) => void;
+  onDayDelete?: (day: DayKey) => void;
 }
 
-export default function WeekCalendar({ weekKey, weekMenu, onDayPress }: Props) {
+export default function WeekCalendar({ weekKey, weekMenu, onDayPress, onDayDelete }: Props) {
   const dates = getWeekDates(weekKey);
+
+  function renderRightActions(
+    progress: Animated.AnimatedInterpolation<number>,
+    dayKey: DayKey
+  ) {
+    const translateX = progress.interpolate({
+      inputRange: [0, 1],
+      outputRange: [80, 0],
+    });
+    return (
+      <Animated.View style={[styles.deleteAction, { transform: [{ translateX }] }]}>
+        <TouchableOpacity
+          style={styles.deleteBtn}
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+            onDayDelete?.(dayKey);
+          }}
+        >
+          <Text style={styles.deleteBtnText}>削除</Text>
+        </TouchableOpacity>
+      </Animated.View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -20,8 +46,14 @@ export default function WeekCalendar({ weekKey, weekMenu, onDayPress }: Props) {
         const isWeekend = dayKey === 'Sat' || dayKey === 'Sun';
 
         return (
-          <TouchableOpacity
+          <Swipeable
             key={dayKey}
+            renderRightActions={(progress) => renderRightActions(progress, dayKey)}
+            enabled={!!entry && !!onDayDelete}
+            friction={2}
+            overshootRight={false}
+          >
+          <TouchableOpacity
             style={styles.dayCell}
             onPress={() => onDayPress(dayKey)}
             activeOpacity={0.7}
@@ -52,6 +84,7 @@ export default function WeekCalendar({ weekKey, weekMenu, onDayPress }: Props) {
               )}
             </View>
           </TouchableOpacity>
+          </Swipeable>
         );
       })}
     </View>
@@ -115,5 +148,23 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 13,
     color: '#BBBBBB',
+  },
+  deleteAction: {
+    width: 80,
+    justifyContent: 'center',
+    alignItems: 'stretch',
+    marginVertical: 0,
+  },
+  deleteBtn: {
+    flex: 1,
+    backgroundColor: '#FF3B30',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 12,
+  },
+  deleteBtnText: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '600',
   },
 });

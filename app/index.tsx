@@ -127,6 +127,7 @@ export default function MenuScreen() {
           weekKey={weekKey}
           weekMenu={weekMenu}
           onDayPress={handleDayPress}
+          onDayDelete={handleClear}
         />
       </ScrollView>
 
