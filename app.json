@@ -8,9 +8,11 @@
     "platforms": [
       "ios"
     ],
+    "icon": "./assets/icon.png",
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.nakakei6439.kondatecart",
+      "buildNumber": "1",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -24,7 +26,7 @@
           "androidAppId": "ca-app-pub-xxxxxxxxxxxxxxxx~xxxxxxxxxx",
           "iosAppId": "ca-app-pub-6037843763000573~3751863813"
         }
-      ]
+      ],
     ],
     "runtimeVersion": {
       "policy": "sdkVersion"
