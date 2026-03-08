@@ -13,6 +13,7 @@ import {
   TouchableWithoutFeedback,
   View,
 } from 'react-native';
+import { SettingsModal } from '../src/components/SettingsModal';
 import ShoppingItemComp from '../src/components/ShoppingItem';
 import { useInterstitialAd } from '../src/hooks/useInterstitialAd';
 import { useShoppingStore } from '../src/store/shoppingStore';
@@ -25,6 +26,7 @@ export default function ShoppingScreen() {
   const { showAd } = useInterstitialAd();
 
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [newItemName, setNewItemName] = useState('');
   const [newItemAmount, setNewItemAmount] = useState('');
 
@@ -81,10 +83,17 @@ export default function ShoppingScreen() {
       {/* Large Title */}
       <View style={styles.titleArea}>
         <Text style={styles.largeTitle}>買い物リスト</Text>
-        <TouchableOpacity onPress={openAddModal} style={styles.addBtn}>
-          <Text style={styles.addBtnText}>＋</Text>
-        </TouchableOpacity>
+        <View style={styles.titleButtons}>
+          <TouchableOpacity onPress={() => setShowSettings(true)} style={styles.settingsBtn}>
+            <Text style={styles.settingsBtnText}>⚙</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={openAddModal} style={styles.addBtn}>
+            <Text style={styles.addBtnText}>＋</Text>
+          </TouchableOpacity>
+        </View>
       </View>
+
+      <SettingsModal visible={showSettings} onClose={() => setShowSettings(false)} />
 
       {/* モード切替 */}
       <View style={styles.segmentRow}>
@@ -234,6 +243,23 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#1C1C1E',
     letterSpacing: 0.3,
+  },
+  titleButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  settingsBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#E5E5EA',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  settingsBtnText: {
+    fontSize: 18,
+    color: '#8E8E93',
   },
   addBtn: {
     width: 36,

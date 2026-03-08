@@ -119,12 +119,19 @@ export default function DayEntrySheet({
 
   function handleSave() {
     if (!dayKey) return;
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    const trimmedDishName = dishName.trim();
     const filtered = ingredients.filter((i) => i.name.trim());
+    const trimmedNote = note.trim();
+    if (!trimmedDishName && filtered.length === 0 && !trimmedNote) {
+      isDirty.current = false;
+      onClose();
+      return;
+    }
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     onSave(dayKey, {
-      dishName: dishName.trim(),
+      dishName: trimmedDishName,
       ingredients: filtered,
-      note: note.trim(),
+      note: trimmedNote,
     });
     isDirty.current = false;
     onClose();

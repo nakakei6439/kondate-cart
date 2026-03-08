@@ -4,12 +4,14 @@ import {
   InterstitialAd,
   TestIds,
 } from 'react-native-google-mobile-ads';
+import { usePurchaseStore } from '../store/purchaseStore';
 
 const AD_UNIT_ID = __DEV__
   ? TestIds.INTERSTITIAL
   : 'ca-app-pub-6037843763000573/8286005190';
 
 export function useInterstitialAd() {
+  const isPremium = usePurchaseStore((s) => s.isPremium);
   const adRef = useRef<InterstitialAd | null>(null);
   const onAdClosedRef = useRef<(() => void) | null>(null);
   const loadedRef = useRef(false);
@@ -37,6 +39,11 @@ export function useInterstitialAd() {
   }, []);
 
   function showAd(onAdClosed: () => void) {
+    // プレミアム購入済みの場合は広告をスキップ
+    if (isPremium) {
+      onAdClosed();
+      return;
+    }
     if (loadedRef.current && adRef.current) {
       onAdClosedRef.current = onAdClosed;
       adRef.current.show();

@@ -1,9 +1,17 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { usePurchaseStore } from '../src/store/purchaseStore';
 
 export default function Layout() {
+  const initPurchases = usePurchaseStore((s) => s.initPurchases);
+
+  useEffect(() => {
+    initPurchases();
+  }, []);
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <StatusBar style="dark" />
