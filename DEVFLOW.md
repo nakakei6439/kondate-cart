@@ -4,7 +4,7 @@
 
 - Node.js 20+ インストール済み（`/Users/nakagawakeita/node-bin/bin/` に配置）
 - Xcode インストール済み（iOS シミュレーター使用）
-- iPhone に Expo Go アプリ（SDK 54）インストール済み
+- iPhone に Expo Go アプリ（SDK 54）インストール済み（UI確認用）
 
 ---
 
@@ -12,7 +12,7 @@
 
 ```bash
 export PATH="/Users/nakagawakeita/node-bin/bin:$PATH"
-cd "/Users/nakagawakeita/Products/Weekly Dinner MENU"
+cd "/Users/nakagawakeita/Products/APP/Kondate Cart/KondateCart app"
 
 # パッケージインストール（legacy-peer-deps が必要）
 npm install --legacy-peer-deps
@@ -23,7 +23,7 @@ npm install --legacy-peer-deps
 ## ステップ 2: 型定義
 
 `src/types/index.ts` に Ingredient / DishRecord / DayEntry / WeekMenu を定義。
-→ REQUIREMENTS.md の「3. データモデル」をそのままコピー。
+→ REQUIREMENTS.md の「3. データモデル」を参照。
 
 ---
 
@@ -85,7 +85,7 @@ app/
 
 ---
 
-## ステップ 8: 起動・動作確認
+## ステップ 8: 起動・動作確認（UI のみ）
 
 ```bash
 export PATH="/Users/nakagawakeita/node-bin/bin:$PATH"
@@ -93,6 +93,8 @@ npx expo start
 ```
 
 iPhone の Expo Go でQRコードをスキャン。
+
+> **注意**: IAP（アプリ内課金）は Expo Go では動作しない。IAP のテストは下記「EAS Development Build」を使う。
 
 確認項目：
 - [ ] タブが3本（献立・買い物・履歴）だけ表示される
@@ -103,6 +105,36 @@ iPhone の Expo Go でQRコードをスキャン。
 - [ ] 過去の料理を選択すると材料が入力される
 - [ ] 買い物タブが来週/再来週の切り替えになっている
 - [ ] 履歴タブで料理の名前・材料を編集・保存できる
-- [ ] 履歴タブで編集後、献立入力シートの「履歴から選択」で更新済み材料が反映される
-- [ ] 履歴タブで料理を削除できる
+- [ ] 履歴タブで削除できる
 - [ ] アプリ再起動後もデータが保持されている
+
+---
+
+## ステップ 9: EAS Development Build（IAP / AdMob テスト時）
+
+IAP・AdMob はネイティブモジュールを使うため、Expo Go では動作しない。
+
+```bash
+export PATH="/Users/nakagawakeita/node-bin/bin:$PATH"
+
+# Development Build をビルドして実機インストール
+eas build --profile development --platform ios
+
+# ビルド完了後、QR コードから実機にインストールして起動
+npx expo start --dev-client
+```
+
+IAP のトラブル時は `IAP_TROUBLESHOOT.md` を参照。
+
+---
+
+## ステップ 10: TestFlight / App Store 提出
+
+```bash
+# Preview（TestFlight 用）
+eas build --profile preview --platform ios
+
+# Production（App Store 提出用）
+eas build --profile production --platform ios
+eas submit --platform ios
+```

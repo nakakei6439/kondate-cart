@@ -3,7 +3,7 @@
     "name": "献立カート",
     "slug": "kondate-cart",
     "scheme": "kondate-cart",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "platforms": [
       "ios"
@@ -15,7 +15,8 @@
       "buildNumber": "2",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
-      }
+      },
+      "appleTeamId": "5Z6T9SM259"
     },
     "plugins": [
       "expo-router",
@@ -26,7 +27,7 @@
           "androidAppId": "ca-app-pub-xxxxxxxxxxxxxxxx~xxxxxxxxxx",
           "iosAppId": "ca-app-pub-6037843763000573~3751863813"
         }
-      ],
+      ]
     ],
     "runtimeVersion": {
       "policy": "sdkVersion"
