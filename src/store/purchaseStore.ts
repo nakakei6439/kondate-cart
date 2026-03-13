@@ -13,6 +13,7 @@ interface PurchaseState {
   initPurchases: () => Promise<void>;
   purchasePremium: () => Promise<{ success: boolean; error?: string }>;
   restorePurchases: () => Promise<{ success: boolean; restored: boolean; error?: string }>;
+  resetPremium: () => Promise<void>;
 }
 
 export const usePurchaseStore = create<PurchaseState>((set) => ({
@@ -87,5 +88,10 @@ export const usePurchaseStore = create<PurchaseState>((set) => ({
       set({ isLoading: false });
       return { success: false, restored: false, error: '復元に失敗しました' };
     }
+  },
+
+  resetPremium: async () => {
+    await AsyncStorage.removeItem(PREMIUM_STORAGE_KEY);
+    set({ isPremium: false, offeringPrice: null });
   },
 }));

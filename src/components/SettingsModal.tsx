@@ -20,7 +20,7 @@ interface Props {
 }
 
 export function SettingsModal({ visible, onClose }: Props) {
-  const { isPremium, isLoading, offeringPrice, purchasePremium, restorePurchases } = usePurchaseStore();
+  const { isPremium, isLoading, offeringPrice, purchasePremium, restorePurchases, resetPremium } = usePurchaseStore();
 
   async function handlePurchase() {
     const result = await purchasePremium();
@@ -92,6 +92,22 @@ export function SettingsModal({ visible, onClose }: Props) {
             </>
           )}
         </View>
+
+        {/* デバッグセクション（開発時のみ） */}
+        {__DEV__ && (
+          <View style={styles.devSection}>
+            <Text style={styles.sectionLabel}>デバッグ</Text>
+            <TouchableOpacity
+              style={styles.devBtn}
+              onPress={async () => {
+                await resetPremium();
+                Alert.alert('リセット完了', 'プレミアム状態をリセットしました。サンドボックステストを再実行できます。');
+              }}
+            >
+              <Text style={styles.devBtnText}>プレミアムをリセット (Dev)</Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
         {/* リンクセクション */}
         <View style={styles.section}>
@@ -208,6 +224,25 @@ const styles = StyleSheet.create({
   },
   btnDisabled: {
     opacity: 0.5,
+  },
+  devSection: {
+    backgroundColor: '#FFF3CD',
+    marginHorizontal: 16,
+    marginBottom: 12,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+  },
+  devBtn: {
+    backgroundColor: '#FF9500',
+    borderRadius: 10,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  devBtnText: {
+    fontSize: 14,
+    color: '#FFFFFF',
+    fontWeight: '600',
   },
   linkRow: {
     flexDirection: 'row',
