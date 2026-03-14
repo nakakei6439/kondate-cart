@@ -1,12 +1,17 @@
-# 献立管理アプリ 要件定義（MVP）
+# 要件定義書 — 献立カート
+
+アプリ名: 献立カート / バージョン: 1.0.1 / フェーズ: Phase 1（IAP + AdMob 実装中）
+
+---
 
 ## 1. アプリ概要
 
-夕食の献立を週単位で管理し、買い物リストを自動生成するiOSアプリ。
+夕食の献立を週単位で管理し、買い物リストを自動生成する iOS アプリ。
 過去に作った料理を呼び出して材料を再利用・編集できる。
 
 - **プラットフォーム**: iOS（React Native / Expo）
 - **動作**: オフライン完全動作
+- **収益モデル**: 無料 + IAP 広告削除 ¥300（フリーミアム）
 
 ---
 
@@ -39,7 +44,38 @@
 
 ---
 
-## 3. データモデル
+## 3. 収益化・広告
+
+### IAP（アプリ内課金）
+
+| 項目 | 値 |
+| --- | --- |
+| ライブラリ | react-native-purchases v9.11.2（RevenueCat） |
+| 商品 | 広告削除 買い切り ¥300 |
+| Entitlement ID | `Kondate Cart Premium` |
+| 手取り | ¥210/件（Apple 手数料 30% 控除後） |
+
+> IAP は Expo Go では動作しない。EAS Development Build が必要。
+
+### AdMob 広告
+
+| 項目 | 値 |
+| --- | --- |
+| ライブラリ | react-native-google-mobile-ads v16 |
+| 表示条件 | `Kondate Cart Premium` 未購入ユーザーのみ |
+| 広告種別 | インタースティシャル（画面遷移時） |
+
+### ATT（App Tracking Transparency）
+
+| 項目 | 値 |
+| --- | --- |
+| ライブラリ | expo-tracking-transparency |
+| 表示タイミング | アプリ起動時・AdMob 初期化前 |
+| `NSUserTrackingUsageDescription` | 「広告をパーソナライズするために使用します。」 |
+
+---
+
+## 4. データモデル
 
 ```typescript
 interface Ingredient {
@@ -71,9 +107,9 @@ interface WeekMenu {
 
 ---
 
-## 4. 画面構成
+## 5. 画面構成
 
-```
+```text
 Bottom Tab（3タブ）
 ├── 献立    🍽️  — 週間カレンダー・料理入力・過去の閲覧
 ├── 買い物  🛒  — 来週〜再来週の材料リスト
@@ -82,10 +118,10 @@ Bottom Tab（3タブ）
 
 ---
 
-## 5. データ保存（AsyncStorage）
+## 6. データ保存（AsyncStorage）
 
 | キー | 内容 |
-|------|------|
+| --- | --- |
 | `week_menu_{weekKey}` | WeekMenu JSON |
 | `week_keys` | 保存済み週キー配列 |
 | `dish_{id}` | DishRecord JSON |
@@ -93,51 +129,60 @@ Bottom Tab（3タブ）
 
 ---
 
-## 6. 技術スタック
+## 7. 技術スタック
 
-| 項目 | 選択 | 備考 |
-|------|------|------|
-| フレームワーク | React Native（Expo managed） | — |
+| 項目 | ライブラリ / 選択 | 備考 |
+| --- | --- | --- |
+| フレームワーク | React Native（Expo managed） | SDK 54 |
 | 言語 | TypeScript | — |
-| ナビゲーション | **Expo Router** | Expoに標準搭載。ファイル名がそのままページになり設定が少ない |
-| 状態管理 | **Zustand** | 1ファイルで書けるシンプルな状態管理 |
-| 永続化 | AsyncStorage | オフライン動作・このサイズには十分 |
+| ナビゲーション | Expo Router | ファイル名がそのままページになる |
+| 状態管理 | Zustand v5 | 1ファイルで書けるシンプルな設計 |
+| 永続化 | AsyncStorage v2 | オフライン動作・このサイズには十分 |
 | UI | React Native StyleSheet | 外部UIライブラリなし |
+| IAP | react-native-purchases v9（RevenueCat） | Expo Go 非対応 |
+| 広告 | react-native-google-mobile-ads v16 | Expo Go 非対応 |
+| ATT | expo-tracking-transparency | ATT ダイアログ表示 |
 
 ---
 
-## 7. フォルダ構成
+## 8. フォルダ構成
 
-```
+```text
 src/
 ├── types/index.ts
 ├── store/
-│   ├── menuStore.ts        # 週間献立（Zustand）
-│   ├── dishStore.ts        # 料理履歴（Zustand）
-│   └── shoppingStore.ts    # 買い物リスト（Zustand）
+│   ├── menuStore.ts         # 週間献立（Zustand）
+│   ├── dishStore.ts         # 料理履歴（Zustand）
+│   ├── shoppingStore.ts     # 買い物リスト（Zustand）
+│   └── purchaseStore.ts     # IAP 購入状態（Zustand）
 ├── storage/
-│   ├── menuStorage.ts      # AsyncStorage CRUD
-│   └── dishStorage.ts      # AsyncStorage CRUD
-├── utils/weekUtils.ts      # weekKey・日付計算
-└── components/             # 再利用コンポーネント（app/ 外に配置）
+│   ├── menuStorage.ts       # AsyncStorage CRUD
+│   └── dishStorage.ts       # AsyncStorage CRUD
+├── hooks/
+│   └── useInterstitialAd.ts # AdMob インタースティシャル制御
+├── utils/weekUtils.ts       # weekKey・日付計算
+└── components/              # 再利用コンポーネント（app/ 外に配置）
     ├── WeekCalendar.tsx
     ├── DayEntrySheet.tsx
     ├── DishEditSheet.tsx
+    ├── SettingsModal.tsx
     └── ShoppingItem.tsx
 
-app/                        # Expo Router（ファイル＝ページ）
-├── _layout.tsx             # タブ定義（3タブ）
-├── index.tsx               # 献立タブ
-├── shopping.tsx            # 買い物リストタブ
-└── history.tsx             # 履歴タブ
+app/                         # Expo Router（ファイル＝ページ）
+├── _layout.tsx              # タブ定義（3タブ）+ GestureHandlerRootView
+├── index.tsx                # 献立タブ
+├── shopping.tsx             # 買い物リストタブ
+└── history.tsx              # 履歴タブ
 ```
 
 > **注意**: コンポーネントは `src/components/` に配置する。`app/` 直下に置くと Expo Router がルートとして認識し、余分なタブが増える。
 
 ---
 
-## 8. 将来拡張案
+## 9. 将来拡張案
 
 - 先週の献立を一括コピー
 - 買い物リストの共有（Share API）
 - iCloud バックアップ
+- ホーム画面ウィジェット
+- Android 版対応
