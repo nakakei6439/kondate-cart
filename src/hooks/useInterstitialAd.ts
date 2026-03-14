@@ -14,12 +14,19 @@ export function useInterstitialAd() {
   const isPremium = usePurchaseStore((s) => s.isPremium);
   const adRef = useRef<InterstitialAd | null>(null);
   const onAdClosedRef = useRef<(() => void) | null>(null);
+  const pendingCallbackRef = useRef<(() => void) | null>(null);
   const loadedRef = useRef(false);
 
   function loadAd() {
     const ad = InterstitialAd.createForAdRequest(AD_UNIT_ID);
     ad.addAdEventListener(AdEventType.LOADED, () => {
       loadedRef.current = true;
+      // showAd 呼び出し時に未ロードだった場合、ロード完了後に即表示
+      if (pendingCallbackRef.current) {
+        onAdClosedRef.current = pendingCallbackRef.current;
+        pendingCallbackRef.current = null;
+        ad.show();
+      }
     });
     ad.addAdEventListener(AdEventType.CLOSED, () => {
       loadedRef.current = false;
@@ -29,6 +36,12 @@ export function useInterstitialAd() {
     });
     ad.addAdEventListener(AdEventType.ERROR, () => {
       loadedRef.current = false;
+      // ロード失敗時は pending callback をスキップ実行して再ロード
+      if (pendingCallbackRef.current) {
+        pendingCallbackRef.current();
+        pendingCallbackRef.current = null;
+      }
+      loadAd();
     });
     ad.load();
     adRef.current = ad;
@@ -48,8 +61,8 @@ export function useInterstitialAd() {
       onAdClosedRef.current = onAdClosed;
       adRef.current.show();
     } else {
-      // 広告未ロードの場合は即コールバック実行
-      onAdClosed();
+      // 広告未ロードの場合はロード完了まで待機
+      pendingCallbackRef.current = onAdClosed;
     }
   }
 
