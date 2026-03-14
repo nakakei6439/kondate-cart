@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import {
   AdEventType,
   InterstitialAd,
+  RequestOptions,
   TestIds,
 } from 'react-native-google-mobile-ads';
 import { usePurchaseStore } from '../store/purchaseStore';
@@ -9,6 +10,10 @@ import { usePurchaseStore } from '../store/purchaseStore';
 const AD_UNIT_ID = __DEV__
   ? TestIds.INTERSTITIAL
   : 'ca-app-pub-6037843763000573/8286005190';
+
+const REQUEST_OPTIONS: RequestOptions = {
+  requestNonPersonalizedAdsOnly: false,
+};
 
 export function useInterstitialAd() {
   const isPremium = usePurchaseStore((s) => s.isPremium);
@@ -18,7 +23,7 @@ export function useInterstitialAd() {
   const loadedRef = useRef(false);
 
   function loadAd() {
-    const ad = InterstitialAd.createForAdRequest(AD_UNIT_ID);
+    const ad = InterstitialAd.createForAdRequest(AD_UNIT_ID, REQUEST_OPTIONS);
     ad.addAdEventListener(AdEventType.LOADED, () => {
       loadedRef.current = true;
       // showAd 呼び出し時に未ロードだった場合、ロード完了後に即表示

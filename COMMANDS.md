@@ -40,3 +40,50 @@ Claude API の利用残高・使用量を確認する。
 ```text
 /usage
 ```
+
+---
+
+## ローカル iOS ビルド（EAS クォータ消費なし）
+
+EAS クラウドを使わず、ローカル Mac で IPA をビルドする。
+出力先: `dist/ipa/app-{profile}.ipa`
+
+### npm コマンド
+
+| コマンド | プロファイル | 方式 |
+| --- | --- | --- |
+| `npm run build:ios` | preview（デフォルト） | eas build --local |
+| `npm run build:ios:dev` | development | eas build --local |
+| `npm run build:ios:preview` | preview | eas build --local |
+| `npm run build:ios:production` | production | eas build --local |
+| `npm run build:ios:xcode:preview` | preview | 純粋な xcodebuild |
+| `npm run build:ios:xcode:production` | production | 純粋な xcodebuild |
+
+### 直接実行
+
+```bash
+# eas build --local（推奨 — 証明書を EAS が自動処理）
+./scripts/build-ios.sh preview
+./scripts/build-ios.sh production
+
+# 純粋な xcodebuild（EAS 不要 / Keychain に Distribution 証明書が必要）
+./scripts/build-ios.sh preview --xcodebuild
+./scripts/build-ios.sh production --xcodebuild
+```
+
+### eas build --local と xcodebuild の違い
+
+| 項目 | eas build --local | xcodebuild |
+| --- | --- | --- |
+| EAS クォータ消費 | なし | なし |
+| 証明書管理 | EAS が自動処理 | Keychain に Distribution 証明書が必要 |
+| ExportOptions.plist | 不要 | `scripts/ExportOptions-{profile}.plist` が必要 |
+| オフライン動作 | 不可（初回認証が必要） | 可 |
+
+### TestFlight / App Store 提出
+
+ローカルビルドの IPA を EAS submit で提出できる:
+
+```bash
+eas submit --platform ios --path dist/ipa/app-production.ipa
+```

@@ -5,7 +5,13 @@
   "scripts": {
     "start": "expo start",
     "ios": "expo run:ios",
-    "android": "expo run:android"
+    "android": "expo run:android",
+    "build:ios": "bash scripts/build-ios.sh",
+    "build:ios:dev": "bash scripts/build-ios.sh development",
+    "build:ios:preview": "bash scripts/build-ios.sh preview",
+    "build:ios:production": "bash scripts/build-ios.sh production",
+    "build:ios:xcode:preview": "bash scripts/build-ios.sh preview --xcodebuild",
+    "build:ios:xcode:production": "bash scripts/build-ios.sh production --xcodebuild"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "2.2.0",

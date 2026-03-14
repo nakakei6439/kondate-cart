@@ -3,13 +3,21 @@ import { Tabs } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import MobileAds from 'react-native-google-mobile-ads';
 import { usePurchaseStore } from '../src/store/purchaseStore';
 
 export default function Layout() {
   const initPurchases = usePurchaseStore((s) => s.initPurchases);
 
   useEffect(() => {
-    initPurchases();
+    MobileAds()
+      .setRequestConfiguration({
+        testDeviceIdentifiers: ['8ac225bbbfcf737c201e77398e14ad09'],
+      })
+      .then(() => MobileAds().initialize())
+      .then(() => {
+        initPurchases();
+      });
   }, []);
 
   return (
