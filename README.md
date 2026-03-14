@@ -32,6 +32,15 @@
 | ナビゲーション | Expo Router v6 |
 | 状態管理 | Zustand v5 |
 | 永続化 | AsyncStorage |
+| 広告 | react-native-google-mobile-ads（インタースティシャル） |
+| IAP・課金管理 | react-native-purchases / RevenueCat |
+| トラッキング許可 | expo-tracking-transparency（ATT） |
+| 同意管理 | GoogleUserMessagingPlatform（UMP） |
+
+## 収益化
+
+- **広告（無料ユーザー）**: 買い物リスト再生成時にインタースティシャル広告を表示（AdMob）
+- **プレミアム（¥300 買い切り）**: 広告非表示。RevenueCat で管理
 
 ## 起動方法
 
@@ -43,19 +52,43 @@ npx expo start
 
 iPhone の Expo Go アプリでQRコードをスキャン。
 
+> 広告・IAP を含む機能のテストは Development Build が必要（Expo Go では動作しない）
+
+## ビルド
+
+```bash
+# ローカルビルド（EAS クォータ消費なし）
+npm run build:ios           # preview
+npm run build:ios:production  # production
+
+# TestFlight 提出
+eas submit --platform ios --path dist/ipa/app-production.ipa
+```
+
+詳細は [DEVGUIDE.md](DEVGUIDE.md) を参照。
+
 ## フォルダ構成
 
 ```
 app/
-├── _layout.tsx     # タブ定義（3タブ）
+├── _layout.tsx     # タブ定義・AdMob/ATT/UMP 初期化
 ├── index.tsx       # 献立画面
 ├── shopping.tsx    # 買い物リスト
 └── history.tsx     # 料理履歴
 
 src/
-├── components/     # UIコンポーネント（app/外に配置）
+├── components/     # UIコンポーネント
+├── hooks/          # カスタムフック（useInterstitialAd など）
 ├── store/          # Zustand ストア
 ├── storage/        # AsyncStorage CRUD
 ├── types/          # 型定義
 └── utils/          # ユーティリティ
 ```
+
+## ドキュメント
+
+- [REQUIREMENTS.md](REQUIREMENTS.md) — 要件定義・データモデル・機能仕様
+- [DEVGUIDE.md](DEVGUIDE.md) — 環境構築・開発フロー・設定値
+- [COMMANDS.md](COMMANDS.md) — Claude Code スラッシュコマンド一覧
+- [decisions.md](decisions.md) — 意思決定ログ・トラブルシューティング
+- [BUSINESS_PLAN.md](BUSINESS_PLAN.md) — 事業計画書

@@ -3,7 +3,7 @@ import { Tabs } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import MobileAds from 'react-native-google-mobile-ads';
+import MobileAds, { AdsConsent, AdsConsentStatus } from 'react-native-google-mobile-ads';
 import { requestTrackingPermissionsAsync } from 'expo-tracking-transparency';
 import { usePurchaseStore } from '../src/store/purchaseStore';
 
@@ -13,6 +13,13 @@ export default function Layout() {
   useEffect(() => {
     (async () => {
       await requestTrackingPermissionsAsync();
+      const consentInfo = await AdsConsent.requestInfoUpdate();
+      if (
+        consentInfo.isConsentFormAvailable &&
+        consentInfo.status === AdsConsentStatus.REQUIRED
+      ) {
+        await AdsConsent.showForm();
+      }
       await MobileAds().setRequestConfiguration({
         testDeviceIdentifiers: ['6cf69f5a258c42af022c76908b5f92d8'],
       });

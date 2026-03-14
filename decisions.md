@@ -14,6 +14,13 @@
 - **`BUSINESS_PLAN.md` を新規作成** — `microbusiness_plan.md` は構成が散漫だったため、個人管理向けに11セクション構成（エグゼクティブサマリー・収益予測・ロードマップ等）で書き直し
 - **`REQUIREMENTS.md` に収益化セクションを追加** — MVP時点の要件定義に IAP・AdMob・ATT の要件が未記載だったため追記。フォルダ構成も `purchaseStore.ts`・`useInterstitialAd.ts` を反映
 
+- **UMP（User Messaging Platform）同意フローを `_layout.tsx` に追加** — Google の必須要件。`AdsConsent.requestInfoUpdate()` / `showForm()` を ATT の後・`MobileAds().initialize()` の前に実行する順序に決定
+- **TestFlight で広告が表示されない原因は AdMob アカウント審査待ちと判明** — コードの問題ではなくアカウント側の未設定が原因。お支払い情報の入力とアプリストアリンクが必要だった
+- **GitHub Pages（nakakei6439.github.io）を開発者ウェブサイトとして採用** — app-ads.txt 設置のため。ルートドメインに `app-ads.txt` を置く必要があるため、ユーザーページ用リポジトリ（`nakakei6439.github.io`）を新規作成
+- **マルチアプリ対応のディレクトリ構成を採用** — `nakakei6439.github.io/kondate-cart/` を献立カート専用、ルートを開発者トップページとして分離。将来のアプリはサブディレクトリに追加する方針
+- **App Store の `sellerUrl`（マーケティングURL）が app-ads.txt ドメイン照合に使用される** — `supportUrl` ではなく `sellerUrl` が Google のドメイン確認対象。マーケティングURLの設定が必須
+- **App Store Connect のプライバシー設定でデバイスID・広告データをトラッキング目的で申告** — `NSUserTrackingUsageDescription` がある場合、これらをトラッキング用途として申告しないと審査提出がブロックされる
+
 ---
 
 ## IAP トラブルシューティング
@@ -84,3 +91,75 @@ if (__DEV__) {
 ```
 
 Xcode > Window > Devices and Simulators でログを確認。RevenueCat ダッシュボードの Logs でAPIコールのリアルタイム確認も可能。
+
+---
+
+## AdMob トラブルシューティング
+
+**対象**: 献立カート / react-native-google-mobile-ads v16.2.1 / インタースティシャル広告
+
+### 最短チェックリスト（ここから始める）
+
+```text
+[ ] 1. AdMob アカウントが承認済みか？（ダッシュボードで「アカウントが承認されました」表示）
+[ ] 2. お支払いプロファイルが入力済みか？
+[ ] 3. アプリがストアにリンクされているか？（App Store URL または「ストア未掲載」）
+[ ] 4. app-ads.txt がマーケティングURLのドメインのルートに設置されているか？
+[ ] 5. App Store Connect のマーケティングURL（sellerUrl）が設定されているか？
+[ ] 6. App Store Connect のプライバシー設定でデバイスID・広告データをトラッキング申告済みか？
+[ ] 7. AdMob コンソールで「Verify app」を実行済みか？
+[ ] 8. 開発時は TestIds を使用しているか（__DEV__ で切り替え済み）？
+```
+
+### 優先度別 原因と解決策
+
+| 優先度 | 症状 | 原因 | 解決策 |
+|---|---|---|---|
+| 1 | TestFlight で広告が出ない | AdMob アカウント審査待ち | 審査完了まで待つ（24〜72時間） |
+| 2 | TestFlight で広告が出ない | アプリがストアにリンクされていない | AdMob コンソール → アプリ設定 → ストアを追加（未公開なら「ストア未掲載」） |
+| 3 | app-ads.txt エラー | マーケティングURL未設定 | App Store Connect でマーケティングURLを設定（sellerUrl が照合対象） |
+| 4 | app-ads.txt エラー | ファイルがルートにない | `https://ドメイン/app-ads.txt` に設置（サブパス不可） |
+| 5 | 審査提出できない | プライバシー申告未設定 | App Store Connect → App プライバシー → デバイスID・広告データをトラッキング用途で申告 |
+| 6 | 開発中に広告が出ない | TestIds 未使用 | `__DEV__` で `TestIds.INTERSTITIAL` に切り替え |
+| 7 | 本番で広告リクエストが0 | UMP 同意フロー未実装 | `AdsConsent.requestInfoUpdate()` を ATT の後・`initialize()` の前に呼ぶ |
+
+### AdMob コンソール設定
+
+- **App ID (iOS)**: `ca-app-pub-6037843763000573~3751863813`
+- **インタースティシャル広告ユニット ID**: `ca-app-pub-6037843763000573/8286005190`
+- **パブリッシャー ID**: `pub-6037843763000573`
+- **app-ads.txt 内容**: `google.com, pub-6037843763000573, DIRECT, f08c47fec0942fa0`
+- **app-ads.txt URL**: `https://nakakei6439.github.io/app-ads.txt`
+
+### 初期化の正しい順序（`_layout.tsx`）
+
+```typescript
+await requestTrackingPermissionsAsync();          // 1. ATT
+const info = await AdsConsent.requestInfoUpdate(); // 2. UMP
+if (info.isConsentFormAvailable && info.status === AdsConsentStatus.REQUIRED) {
+  await AdsConsent.showForm();
+}
+await MobileAds().setRequestConfiguration({        // 3. テストデバイス設定
+  testDeviceIdentifiers: ['6cf69f5a258c42af022c76908b5f92d8'],
+});
+await MobileAds().initialize();                    // 4. 初期化
+```
+
+### App Store Connect 必須設定
+
+- **マーケティングURL**: `https://nakakei6439.github.io/kondate-cart/`（sellerUrl として app-ads.txt 照合に使用）
+- **サポートURL**: `https://nakakei6439.github.io/kondate-cart/`
+- **プライバシー申告**: デバイスID・広告データ → 目的: サードパーティ広告 → トラッキング: はい
+
+### GitHub Pages 構成
+
+```
+nakakei6439.github.io/
+├── app-ads.txt              ← AdMob 検証用（変更不要）
+├── index.html               ← 開発者トップ（アプリ一覧）
+└── kondate-cart/
+    ├── index.html           ← 献立カート サポートページ
+    └── privacy-policy.html  ← プライバシーポリシー
+```
+
+次のアプリ追加時: `nakakei6439.github.io/新アプリ名/` にページ追加 → `index.html` にカード追記。`app-ads.txt` は変更不要。
