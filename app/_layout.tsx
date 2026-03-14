@@ -4,20 +4,21 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import MobileAds from 'react-native-google-mobile-ads';
+import { requestTrackingPermissionsAsync } from 'expo-tracking-transparency';
 import { usePurchaseStore } from '../src/store/purchaseStore';
 
 export default function Layout() {
   const initPurchases = usePurchaseStore((s) => s.initPurchases);
 
   useEffect(() => {
-    MobileAds()
-      .setRequestConfiguration({
-        testDeviceIdentifiers: ['8ac225bbbfcf737c201e77398e14ad09'],
-      })
-      .then(() => MobileAds().initialize())
-      .then(() => {
-        initPurchases();
+    (async () => {
+      await requestTrackingPermissionsAsync();
+      await MobileAds().setRequestConfiguration({
+        testDeviceIdentifiers: ['6cf69f5a258c42af022c76908b5f92d8'],
       });
+      await MobileAds().initialize();
+      initPurchases();
+    })();
   }, []);
 
   return (

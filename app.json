@@ -12,9 +12,10 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.nakakei6439.kondatecart",
-      "buildNumber": "2",
+      "buildNumber": "10",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSUserTrackingUsageDescription": "広告をパーソナライズするために使用します。"
       },
       "appleTeamId": "5Z6T9SM259"
     },
