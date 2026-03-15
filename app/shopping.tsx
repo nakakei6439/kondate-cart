@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
 import {
   Alert,
@@ -85,7 +86,7 @@ export default function ShoppingScreen() {
         <Text style={styles.largeTitle}>買い物リスト</Text>
         <View style={styles.titleButtons}>
           <TouchableOpacity onPress={() => setShowSettings(true)} style={styles.settingsBtn}>
-            <Text style={styles.settingsBtnText}>⚙</Text>
+            <Ionicons name="settings-outline" size={18} color="#8E8E93" />
           </TouchableOpacity>
           <TouchableOpacity onPress={openAddModal} style={styles.addBtn}>
             <Text style={styles.addBtnText}>＋</Text>
@@ -257,10 +258,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  settingsBtnText: {
-    fontSize: 18,
-    color: '#8E8E93',
-  },
+
   addBtn: {
     width: 36,
     height: 36,

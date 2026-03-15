@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   Alert,
@@ -91,7 +92,7 @@ export default function MenuScreen() {
         <View style={styles.titleRight}>
           {hasAnyEntry && (
             <TouchableOpacity onPress={handleClearWeek} style={styles.clearWeekBtn}>
-              <Text style={styles.clearWeekBtnText}>🗑</Text>
+              <Ionicons name="trash-outline" size={22} color="#8E8E93" />
             </TouchableOpacity>
           )}
         </View>
@@ -190,9 +191,7 @@ const styles = StyleSheet.create({
   clearWeekBtn: {
     padding: 8,
   },
-  clearWeekBtnText: {
-    fontSize: 22,
-  },
+
   nav: {
     flexDirection: 'row',
     alignItems: 'center',
