@@ -47,6 +47,9 @@ npm install --legacy-peer-deps
 
 - `src/storage/dishStorage.ts` — DishRecord の CRUD（saveDish / loadAllDishes / deleteDish）
 - `src/storage/menuStorage.ts` — WeekMenu の CRUD
+- `src/storage/exportStorage.ts` — エクスポート／インポート（exportData / importData）・ダミーデータ生成（seedDummyData）
+
+> **注意**: `expo-file-system` v19 から旧API（`FileSystem.writeAsStringAsync` 等）は `expo-file-system/legacy` 経由で使用する。`expo-file-system` から直接インポートすると `cacheDirectory` や `EncodingType` が見つからずエラーになる。
 
 ### ステップ 3 — Zustand Store
 
@@ -192,3 +195,5 @@ eas submit --platform ios --path build-*.ipa
 - コンポーネントは `src/components/` に配置する（`app/` 直下は Expo Router がルートとして認識する）
 - `GestureHandlerRootView` で `_layout.tsx` 全体をラップすること
 - IAP・AdMob は Expo Go では動作しない（EAS Development Build 必須）
+- `expo-file-system` v19 では旧APIが廃止済み。`import * as FileSystem from 'expo-file-system/legacy'` を使うこと
+- EASクラウドビルド上限超過時は `npx expo run:ios --device <UDID>` でXcode直接ビルドに切り替える

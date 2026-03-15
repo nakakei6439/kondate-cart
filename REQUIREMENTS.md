@@ -17,6 +17,15 @@
 
 ## 2. 機能（3タブ）
 
+### 共通 — 設定
+
+- 全タブから設定モーダルを開ける（各タブのタイトル右上に歯車アイコン）
+- **プレミアム購入** — 広告削除 IAP（¥300）の購入・復元
+- **データ管理**
+  - エクスポート: 全データ（献立・料理履歴）を JSON ファイルとして ShareSheet 経由で保存
+  - インポート: バックアップ JSON を選択して上書き復元（確認アラートあり）
+  - ※アプリ削除後もバックアップファイルが残れば再インストール後に復元可能
+
 ### Tab 1 — 献立
 
 - **デフォルト表示**: 来週（起動時に来週の週が選択されている）
@@ -142,6 +151,9 @@ Bottom Tab（3タブ）
 | IAP | react-native-purchases v9（RevenueCat） | Expo Go 非対応 |
 | 広告 | react-native-google-mobile-ads v16 | Expo Go 非対応 |
 | ATT | expo-tracking-transparency | ATT ダイアログ表示 |
+| ファイル操作 | expo-file-system v19 | `expo-file-system/legacy` 経由で旧API使用 |
+| 共有 | expo-sharing | iOS ShareSheet 経由でファイル共有 |
+| ファイル選択 | expo-document-picker | JSON ファイルの選択・インポート |
 
 ---
 
@@ -157,7 +169,8 @@ src/
 │   └── purchaseStore.ts     # IAP 購入状態（Zustand）
 ├── storage/
 │   ├── menuStorage.ts       # AsyncStorage CRUD
-│   └── dishStorage.ts       # AsyncStorage CRUD
+│   ├── dishStorage.ts       # AsyncStorage CRUD
+│   └── exportStorage.ts     # エクスポート／インポート・ダミーデータ生成
 ├── hooks/
 │   └── useInterstitialAd.ts # AdMob インタースティシャル制御
 ├── utils/weekUtils.ts       # weekKey・日付計算

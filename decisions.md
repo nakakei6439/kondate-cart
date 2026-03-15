@@ -21,6 +21,11 @@
 - **App Store の `sellerUrl`（マーケティングURL）が app-ads.txt ドメイン照合に使用される** — `supportUrl` ではなく `sellerUrl` が Google のドメイン確認対象。マーケティングURLの設定が必須
 - **App Store Connect のプライバシー設定でデバイスID・広告データをトラッキング目的で申告** — `NSUserTrackingUsageDescription` がある場合、これらをトラッキング用途として申告しないと審査提出がブロックされる
 
+- **iCloud の代わりにエクスポート／インポートを先行実装** — iCloud は Provisioning Profile 再設定・実機テスト必須など手間が大きいため、JSONファイルを ShareSheet で保存・DocumentPicker で復元する方式を採用。iCloud はロードマップに残す
+- **設定歯車アイコンを全タブに設置** — 買い物タブのみにあった設定アイコンを献立タブ（右上・ゴミ箱アイコン横）・履歴タブ（タイトル右端）にも追加。全タブから設定モーダルを開けるようにした
+- **`expo-file-system/legacy` を採用** — expo-file-system v19 で旧API（`writeAsStringAsync` 等）が廃止になったため、`expo-file-system/legacy` 経由で使用する方針に決定
+- **`importData()` の戻り値を `boolean` に変更** — DocumentPicker キャンセル時にも「インポート完了」アラートが表示されるバグを修正。`false`（キャンセル）/ `true`（成功）を返し、呼び出し元でチェックする
+
 ---
 
 ## IAP トラブルシューティング

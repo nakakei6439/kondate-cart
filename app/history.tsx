@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   Alert,
@@ -12,6 +13,7 @@ import {
 } from 'react-native';
 import { Swipeable } from 'react-native-gesture-handler';
 import DishEditSheet from '../src/components/DishEditSheet';
+import { SettingsModal } from '../src/components/SettingsModal';
 import { useDishStore } from '../src/store/dishStore';
 import { DishRecord, Ingredient } from '../src/types';
 
@@ -109,6 +111,7 @@ export default function HistoryScreen() {
   const { dishes, initialized, loadDishes, updateDish, deleteDish } = useDishStore();
   const [selectedDish, setSelectedDish] = useState<DishRecord | null>(null);
   const [sheetVisible, setSheetVisible] = useState(false);
+  const [settingsVisible, setSettingsVisible] = useState(false);
   const [query, setQuery] = useState('');
 
   useEffect(() => {
@@ -139,6 +142,9 @@ export default function HistoryScreen() {
       {/* Large Title */}
       <View style={styles.titleArea}>
         <Text style={styles.largeTitle}>料理の履歴</Text>
+        <TouchableOpacity onPress={() => setSettingsVisible(true)} style={styles.settingsBtn}>
+          <Ionicons name="settings-outline" size={24} color="#8E8E93" />
+        </TouchableOpacity>
       </View>
 
       {/* 検索バー */}
@@ -205,6 +211,11 @@ export default function HistoryScreen() {
           setSelectedDish(null);
         }}
       />
+
+      <SettingsModal
+        visible={settingsVisible}
+        onClose={() => setSettingsVisible(false)}
+      />
     </SafeAreaView>
   );
 }
@@ -215,6 +226,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#F2F2F7',
   },
   titleArea: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingTop: 16,
     paddingBottom: 4,
@@ -225,6 +239,9 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#1C1C1E',
     letterSpacing: 0.3,
+  },
+  settingsBtn: {
+    padding: 4,
   },
   searchContainer: {
     flexDirection: 'row',

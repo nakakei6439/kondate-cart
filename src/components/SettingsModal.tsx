@@ -11,6 +11,9 @@ import {
   View,
 } from 'react-native';
 import { usePurchaseStore } from '../store/purchaseStore';
+import { useMenuStore } from '../store/menuStore';
+import { useDishStore } from '../store/dishStore';
+import { exportData, importData, seedDummyData } from '../storage/exportStorage';
 
 const PRIVACY_POLICY_URL = 'https://nakakei6439.github.io/kondate-cart/privacy-policy.html';
 
@@ -21,6 +24,40 @@ interface Props {
 
 export function SettingsModal({ visible, onClose }: Props) {
   const { isPremium, isLoading, offeringPrice, purchasePremium, restorePurchases, resetPremium } = usePurchaseStore();
+  const { weekKey, loadWeekMenu } = useMenuStore();
+  const { loadDishes } = useDishStore();
+
+  async function handleExport() {
+    try {
+      await exportData();
+    } catch (e: unknown) {
+      Alert.alert('エクスポートエラー', e instanceof Error ? e.message : 'エクスポートに失敗しました');
+    }
+  }
+
+  async function handleImport() {
+    Alert.alert(
+      'データをインポート',
+      '現在の献立・料理履歴がすべて上書きされます。続けますか？',
+      [
+        { text: 'キャンセル', style: 'cancel' },
+        {
+          text: '上書きしてインポート',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const imported = await importData();
+              if (!imported) return;
+              await Promise.all([loadWeekMenu(weekKey), loadDishes()]);
+              Alert.alert('インポート完了', 'データを復元しました。');
+            } catch (e: unknown) {
+              Alert.alert('インポートエラー', e instanceof Error ? e.message : 'インポートに失敗しました');
+            }
+          },
+        },
+      ]
+    );
+  }
 
   async function handlePurchase() {
     const result = await purchasePremium();
@@ -106,8 +143,32 @@ export function SettingsModal({ visible, onClose }: Props) {
             >
               <Text style={styles.devBtnText}>プレミアムをリセット (Dev)</Text>
             </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.devBtn, { marginTop: 8 }]}
+              onPress={async () => {
+                await seedDummyData();
+                await Promise.all([loadWeekMenu(weekKey), loadDishes()]);
+                Alert.alert('完了', '2週分のダミーデータを追加しました。');
+              }}
+            >
+              <Text style={styles.devBtnText}>ダミーデータ追加 (Dev)</Text>
+            </TouchableOpacity>
           </View>
         )}
+
+        {/* データ管理セクション */}
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>データ管理</Text>
+          <TouchableOpacity style={styles.linkRow} onPress={handleExport}>
+            <Text style={styles.linkText}>データをエクスポート</Text>
+            <Text style={styles.linkChevron}>›</Text>
+          </TouchableOpacity>
+          <View style={styles.separator} />
+          <TouchableOpacity style={styles.linkRow} onPress={handleImport}>
+            <Text style={styles.importText}>データをインポート（上書き）</Text>
+            <Text style={styles.linkChevron}>›</Text>
+          </TouchableOpacity>
+        </View>
 
         {/* リンクセクション */}
         <View style={styles.section}>
@@ -257,5 +318,14 @@ const styles = StyleSheet.create({
   linkChevron: {
     fontSize: 18,
     color: '#C7C7CC',
+  },
+  separator: {
+    height: 1,
+    backgroundColor: '#F2F2F7',
+    marginVertical: 4,
+  },
+  importText: {
+    fontSize: 15,
+    color: '#FF3B30',
   },
 });

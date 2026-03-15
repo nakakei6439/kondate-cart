@@ -10,6 +10,7 @@ import {
   View,
 } from 'react-native';
 import DayEntrySheet from '../src/components/DayEntrySheet';
+import { SettingsModal } from '../src/components/SettingsModal';
 import WeekCalendar from '../src/components/WeekCalendar';
 import { DayEntry, DayKey } from '../src/types';
 import { useDishStore } from '../src/store/dishStore';
@@ -28,6 +29,7 @@ export default function MenuScreen() {
 
   const [sheetVisible, setSheetVisible] = useState(false);
   const [selectedDay, setSelectedDay] = useState<DayKey | null>(null);
+  const [settingsVisible, setSettingsVisible] = useState(false);
 
   // 初期ロード
   useEffect(() => {
@@ -90,6 +92,9 @@ export default function MenuScreen() {
           <Text style={styles.appSubtitle}>週の献立を計画しよう</Text>
         </View>
         <View style={styles.titleRight}>
+          <TouchableOpacity onPress={() => setSettingsVisible(true)} style={styles.settingsBtn}>
+            <Ionicons name="settings-outline" size={22} color="#8E8E93" />
+          </TouchableOpacity>
           {hasAnyEntry && (
             <TouchableOpacity onPress={handleClearWeek} style={styles.clearWeekBtn}>
               <Ionicons name="trash-outline" size={22} color="#8E8E93" />
@@ -147,6 +152,11 @@ export default function MenuScreen() {
         onClear={handleClear}
         onClose={() => setSheetVisible(false)}
       />
+
+      <SettingsModal
+        visible={settingsVisible}
+        onClose={() => setSettingsVisible(false)}
+      />
     </SafeAreaView>
   );
 }
@@ -185,8 +195,11 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
   },
   titleRight: {
-    width: 44,
-    alignItems: 'flex-end',
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  settingsBtn: {
+    padding: 8,
   },
   clearWeekBtn: {
     padding: 8,
