@@ -19,14 +19,16 @@ function aggregateIngredients(menus: WeekMenu[]): ShoppingItem[] {
   const map = new Map<string, string[]>();
 
   for (const menu of menus) {
-    for (const dayEntry of Object.values(menu.days)) {
-      if (!dayEntry) continue;
-      for (const ing of dayEntry.ingredients) {
-        const name = ing.name.trim();
-        if (!name) continue;
-        const existing = map.get(name) ?? [];
-        existing.push(ing.amount);
-        map.set(name, existing);
+    for (const dayRecord of Object.values(menu.days)) {
+      if (!dayRecord) continue;
+      for (const dish of dayRecord.dishes) {
+        for (const ing of dish.ingredients) {
+          const name = ing.name.trim();
+          if (!name) continue;
+          const existing = map.get(name) ?? [];
+          existing.push(ing.amount);
+          map.set(name, existing);
+        }
       }
     }
   }

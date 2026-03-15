@@ -12,7 +12,7 @@ import {
 import DayEntrySheet from '../src/components/DayEntrySheet';
 import { SettingsModal } from '../src/components/SettingsModal';
 import WeekCalendar from '../src/components/WeekCalendar';
-import { DayEntry, DayKey } from '../src/types';
+import { DayKey, DayRecord } from '../src/types';
 import { useDishStore } from '../src/store/dishStore';
 import { useMenuStore } from '../src/store/menuStore';
 import {
@@ -23,12 +23,13 @@ import {
 } from '../src/utils/weekUtils';
 
 export default function MenuScreen() {
-  const { weekKey, weekMenu, setWeekKey, loadWeekMenu, saveDayEntry, clearDayEntry, clearWeekMenu } =
+  const { weekKey, weekMenu, setWeekKey, loadWeekMenu, saveDayRecord, clearDayRecord, clearWeekMenu } =
     useMenuStore();
   const { dishes, initialized, loadDishes, upsertDish } = useDishStore();
 
   const [sheetVisible, setSheetVisible] = useState(false);
   const [selectedDay, setSelectedDay] = useState<DayKey | null>(null);
+  const [appendNewDish, setAppendNewDish] = useState(false);
   const [settingsVisible, setSettingsVisible] = useState(false);
 
   // 初期ロード
@@ -43,27 +44,39 @@ export default function MenuScreen() {
   const handleDayPress = useCallback(
     (day: DayKey) => {
       setSelectedDay(day);
+      setAppendNewDish(false);
+      setSheetVisible(true);
+    },
+    []
+  );
+
+  const handleDishAdd = useCallback(
+    (day: DayKey) => {
+      setSelectedDay(day);
+      setAppendNewDish(true);
       setSheetVisible(true);
     },
     []
   );
 
   const handleSave = useCallback(
-    async (day: DayKey, entry: DayEntry) => {
-      await saveDayEntry(day, entry);
-      // 料理名がある場合は履歴に登録
-      if (entry.dishName.trim()) {
-        await upsertDish(entry.dishName.trim(), entry.ingredients);
+    async (day: DayKey, record: DayRecord) => {
+      await saveDayRecord(day, record);
+      // 各料理を履歴に登録
+      for (const dish of record.dishes) {
+        if (dish.dishName.trim()) {
+          await upsertDish(dish.dishName.trim(), dish.ingredients);
+        }
       }
     },
-    [saveDayEntry, upsertDish]
+    [saveDayRecord, upsertDish]
   );
 
   const handleClear = useCallback(
     async (day: DayKey) => {
-      await clearDayEntry(day);
+      await clearDayRecord(day);
     },
-    [clearDayEntry]
+    [clearDayRecord]
   );
 
   const currentKey = nextWeekKey(getCurrentWeekKey());
@@ -140,6 +153,7 @@ export default function MenuScreen() {
           weekMenu={weekMenu}
           onDayPress={handleDayPress}
           onDayDelete={handleClear}
+          onDishAdd={handleDishAdd}
         />
       </ScrollView>
 
@@ -148,6 +162,7 @@ export default function MenuScreen() {
         dayKey={selectedDay}
         initialEntry={selectedDay ? weekMenu?.days[selectedDay] ?? null : null}
         dishes={dishes}
+        appendNewDish={appendNewDish}
         onSave={handleSave}
         onClear={handleClear}
         onClose={() => setSheetVisible(false)}

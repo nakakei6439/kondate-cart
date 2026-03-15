@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import React, { useRef } from 'react';
 import { Animated, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
@@ -10,9 +11,10 @@ interface Props {
   weekMenu: WeekMenu | null;
   onDayPress: (day: DayKey) => void;
   onDayDelete?: (day: DayKey) => void;
+  onDishAdd?: (day: DayKey) => void;
 }
 
-export default function WeekCalendar({ weekKey, weekMenu, onDayPress, onDayDelete }: Props) {
+export default function WeekCalendar({ weekKey, weekMenu, onDayPress, onDayDelete, onDishAdd }: Props) {
   const dates = getWeekDates(weekKey);
   const swipeRefs = useRef<Map<DayKey, Swipeable | null>>(new Map());
 
@@ -50,43 +52,58 @@ export default function WeekCalendar({ weekKey, weekMenu, onDayPress, onDayDelet
         return (
           <Swipeable
             key={dayKey}
-            ref={(ref) => swipeRefs.current.set(dayKey, ref)}
+            ref={(ref) => { swipeRefs.current.set(dayKey, ref); }}
             renderRightActions={(progress) => renderRightActions(progress, dayKey)}
             enabled={!!entry && !!onDayDelete}
             friction={2}
             overshootRight={false}
           >
-          <TouchableOpacity
-            style={styles.dayCell}
-            onPress={() => onDayPress(dayKey)}
-            activeOpacity={0.7}
-          >
-            <View style={styles.dayHeader}>
-              <Text style={[styles.dayLabelText, isWeekend && styles.weekend]}>
-                {getDayLabel(dayKey)}
-              </Text>
-              <Text style={[styles.dateText, isWeekend && styles.weekend]}>
-                {date.getMonth() + 1}/{date.getDate()}
-              </Text>
-            </View>
+          <View style={styles.dayCell}>
+            <TouchableOpacity
+              style={styles.dayCellPressable}
+              onPress={() => onDayPress(dayKey)}
+              activeOpacity={0.7}
+            >
+              <View style={styles.dayHeader}>
+                <Text style={[styles.dayLabelText, isWeekend && styles.weekend]}>
+                  {getDayLabel(dayKey)}
+                </Text>
+                <Text style={[styles.dateText, isWeekend && styles.weekend]}>
+                  {date.getMonth() + 1}/{date.getDate()}
+                </Text>
+              </View>
 
-            <View style={[styles.entryArea, entry && styles.entryFilled]}>
-              {entry ? (
-                <>
-                  <Text style={styles.dishName} numberOfLines={2}>
-                    {entry.dishName || entry.note || '入力済み'}
-                  </Text>
-                  {entry.note && entry.dishName ? (
-                    <Text style={styles.noteText} numberOfLines={1}>
-                      {entry.note}
+              <View style={[styles.entryArea, entry && styles.entryFilled]}>
+                {entry ? (
+                  <>
+                    <Text style={styles.dishName} numberOfLines={2}>
+                      {entry.dishes.map((d) => d.dishName).filter(Boolean).join('・') || entry.note || '入力済み'}
                     </Text>
-                  ) : null}
-                </>
-              ) : (
-                <Text style={styles.emptyText}>タップして入力</Text>
-              )}
-            </View>
-          </TouchableOpacity>
+                    {entry.note && entry.dishes.some((d) => d.dishName) ? (
+                      <Text style={styles.noteText} numberOfLines={1}>
+                        {entry.note}
+                      </Text>
+                    ) : null}
+                  </>
+                ) : (
+                  <Text style={styles.emptyText}>タップして入力</Text>
+                )}
+              </View>
+            </TouchableOpacity>
+
+            {entry && onDishAdd && (
+              <TouchableOpacity
+                style={styles.addDishIconBtn}
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  onDishAdd(dayKey);
+                }}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Ionicons name="add-circle-outline" size={22} color="#E8692A" />
+              </TouchableOpacity>
+            )}
+          </View>
           </Swipeable>
         );
       })}
@@ -106,6 +123,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8F8F8',
     borderRadius: 12,
     overflow: 'hidden',
+  },
+  dayCellPressable: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  addDishIconBtn: {
+    paddingHorizontal: 10,
+    paddingVertical: 14,
   },
   dayHeader: {
     width: 52,
