@@ -29,7 +29,6 @@ export default function MenuScreen() {
 
   const [sheetVisible, setSheetVisible] = useState(false);
   const [selectedDay, setSelectedDay] = useState<DayKey | null>(null);
-  const [appendNewDish, setAppendNewDish] = useState(false);
   const [settingsVisible, setSettingsVisible] = useState(false);
 
   // 初期ロード
@@ -44,16 +43,6 @@ export default function MenuScreen() {
   const handleDayPress = useCallback(
     (day: DayKey) => {
       setSelectedDay(day);
-      setAppendNewDish(false);
-      setSheetVisible(true);
-    },
-    []
-  );
-
-  const handleDishAdd = useCallback(
-    (day: DayKey) => {
-      setSelectedDay(day);
-      setAppendNewDish(true);
       setSheetVisible(true);
     },
     []
@@ -153,7 +142,6 @@ export default function MenuScreen() {
           weekMenu={weekMenu}
           onDayPress={handleDayPress}
           onDayDelete={handleClear}
-          onDishAdd={handleDishAdd}
         />
       </ScrollView>
 
@@ -162,7 +150,6 @@ export default function MenuScreen() {
         dayKey={selectedDay}
         initialEntry={selectedDay ? weekMenu?.days[selectedDay] ?? null : null}
         dishes={dishes}
-        appendNewDish={appendNewDish}
         onSave={handleSave}
         onClear={handleClear}
         onClose={() => setSheetVisible(false)}

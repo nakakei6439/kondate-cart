@@ -373,11 +373,6 @@ export default function DayEntrySheet({
           </ScrollView>
 
           <View style={styles.footer}>
-            {initialEntry && (
-              <TouchableOpacity style={styles.clearBtn} onPress={handleClear}>
-                <Text style={styles.clearBtnText}>削除</Text>
-              </TouchableOpacity>
-            )}
             <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
               <Text style={styles.saveBtnText}>保存</Text>
             </TouchableOpacity>
@@ -588,21 +583,8 @@ const styles = StyleSheet.create({
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: '#C6C6C8',
   },
-  clearBtn: {
-    flex: 1,
-    height: 50,
-    backgroundColor: '#F2F2F7',
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  clearBtnText: {
-    fontSize: 16,
-    color: '#FF3B30',
-    fontWeight: '600',
-  },
   saveBtn: {
-    flex: 2,
+    flex: 1,
     height: 50,
     backgroundColor: '#E8692A',
     borderRadius: 12,

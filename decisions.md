@@ -27,6 +27,13 @@
 - **`expo-file-system/legacy` を採用** — expo-file-system v19 で旧API（`writeAsStringAsync` 等）が廃止になったため、`expo-file-system/legacy` 経由で使用する方針に決定
 - **`importData()` の戻り値を `boolean` に変更** — DocumentPicker キャンセル時にも「インポート完了」アラートが表示されるバグを修正。`false`（キャンセル）/ `true`（成功）を返し、呼び出し元でチェックする
 
+- **1日複数料理対応の型設計: `DishEntry` + `DayRecord` に分割** — `DayEntry`（1料理+note）を廃止。`DishEntry`（料理名+材料のみ）と `DayRecord`（dishes[] + note）に分離し、1日に主菜・副菜など複数料理を管理できるようにした
+- **旧データの自動マイグレーションを採用** — `migrateDayRecord()` を `menuStorage.ts` に追加。旧 DayEntry 形式（`dishName`/`ingredients`/`note` がトップレベル）を検出したら自動で新形式に変換。既存ユーザーデータが壊れない
+- **献立入力シートを全画面モーダルに変更** — ボトムシート（`transparent=true` + 自前 Animated スライド）から `animationType="slide"` の全画面 Modal に切り替え。`SafeAreaView` でノッチ対応。ヘッダーの「✕」→「‹ 戻る」に変更（iOS ナビゲーション慣習に合わせる）
+- **フッターの削除ボタンを廃止** — 献立入力画面下部の「削除」ボタンを削除し、「保存」ボタンのみ全幅表示に変更。削除操作はスワイプ削除に一本化してUIをシンプルに保つ
+- **料理削除ボタンをセクションヘッダーから料理名行へ移動** — 複数料理時の削除ボタンがスクロールで隠れる問題を解消。料理名 TextInput 右横にゴミ箱アイコンを配置し、常に見える位置に固定
+- **カレンダーセルへの副菜追加＋ボタンは不採用** — 一度実装したが、シンプルさ優先のため削除。副菜追加はシート内の「副菜・もう一品を追加」ボタン経由に統一
+
 ---
 
 ## IAP トラブルシューティング
