@@ -222,7 +222,9 @@ export default function DayEntrySheet({
             <Text style={styles.headerTitle}>
               {dayKey ? getDayLabel(dayKey) + '曜日の献立' : ''}
             </Text>
-            <View style={styles.headerSpacer} />
+            <TouchableOpacity onPress={addDish} style={styles.addDishIconBtn}>
+              <Ionicons name="add-circle-outline" size={26} color="#E8692A" />
+            </TouchableOpacity>
           </View>
 
           <ScrollView
@@ -352,12 +354,6 @@ export default function DayEntrySheet({
               );
             })}
 
-            {/* Add dish button */}
-            <TouchableOpacity style={styles.addDishBtn} onPress={addDish}>
-              <Ionicons name="add-circle-outline" size={18} color="#E8692A" />
-              <Text style={styles.addDishText}>副菜・もう一品を追加</Text>
-            </TouchableOpacity>
-
             {/* Note */}
             <Text style={[styles.label, { marginTop: 8 }]}>メモ</Text>
             <TextInput
@@ -415,8 +411,11 @@ const styles = StyleSheet.create({
     fontSize: 17,
     color: '#E8692A',
   },
-  headerSpacer: {
+  addDishIconBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
     minWidth: 70,
+    alignItems: 'flex-end',
   },
   body: {
     paddingHorizontal: 20,
@@ -547,24 +546,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#E8692A',
     fontWeight: '500',
-  },
-  addDishBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    paddingVertical: 13,
-    borderRadius: 10,
-    borderWidth: 1.5,
-    borderColor: '#E8692A',
-    borderStyle: 'dashed',
-    backgroundColor: '#FFF8F4',
-    marginBottom: 20,
-  },
-  addDishText: {
-    fontSize: 15,
-    color: '#E8692A',
-    fontWeight: '600',
   },
   noteInput: {
     height: 44,
