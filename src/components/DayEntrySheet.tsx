@@ -40,11 +40,27 @@ export default function DayEntrySheet({
   onClose,
 }: Props) {
   const isDirty = useRef(false);
+  const scrollRef = useRef<React.ElementRef<typeof ScrollView>>(null);
+  const prevDishCountRef = useRef(1);
+  const prevIngCountRef = useRef(1);
 
   const [dayDishes, setDayDishes] = useState<DishEntry[]>([{ dishName: '', ingredients: [{ name: '', amount: '' }] }]);
   const [note, setNote] = useState('');
   const [activeHistoryIdx, setActiveHistoryIdx] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+
+  useEffect(() => {
+    const totalIngs = dayDishes.reduce((sum, d) => sum + d.ingredients.length, 0);
+    const dishAdded = dayDishes.length > prevDishCountRef.current;
+    const ingAdded = totalIngs > prevIngCountRef.current;
+    if (dishAdded || ingAdded) {
+      setTimeout(() => {
+        scrollRef.current?.scrollToEnd({ animated: true });
+      }, 100);
+    }
+    prevDishCountRef.current = dayDishes.length;
+    prevIngCountRef.current = totalIngs;
+  }, [dayDishes]);
 
   useEffect(() => {
     if (visible) {
@@ -228,6 +244,7 @@ export default function DayEntrySheet({
           </View>
 
           <ScrollView
+            ref={scrollRef}
             style={styles.body}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
