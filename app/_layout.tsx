@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
+import { AppState, AppStateStatus } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import MobileAds, { AdsConsent, AdsConsentStatus } from 'react-native-google-mobile-ads';
 import { requestTrackingPermissionsAsync } from 'expo-tracking-transparency';
@@ -9,9 +10,17 @@ import { usePurchaseStore } from '../src/store/purchaseStore';
 
 export default function Layout() {
   const initPurchases = usePurchaseStore((s) => s.initPurchases);
+  const initialized = useRef(false);
 
   useEffect(() => {
-    (async () => {
+    const initAds = async () => {
+      if (initialized.current) return;
+      initialized.current = true;
+
+      // iOS 17+ では UIWindow が完全にアクティブになる前に ATT を呼ぶとダイアログが無視される。
+      // AppState が active になった後 300ms 待機することで表示を確実にする。
+      await new Promise<void>((resolve) => setTimeout(resolve, 300));
+
       await requestTrackingPermissionsAsync();
       const consentInfo = await AdsConsent.requestInfoUpdate();
       if (
@@ -25,7 +34,22 @@ export default function Layout() {
       });
       await MobileAds().initialize();
       initPurchases();
-    })();
+    };
+
+    if (AppState.currentState === 'active') {
+      initAds();
+    } else {
+      const subscription = AppState.addEventListener(
+        'change',
+        (nextState: AppStateStatus) => {
+          if (nextState === 'active') {
+            subscription.remove();
+            initAds();
+          }
+        }
+      );
+      return () => subscription.remove();
+    }
   }, []);
 
   return (

@@ -116,7 +116,7 @@ build_eas_local() {
 # ビルド: 純粋な xcodebuild（オフライン / フォールバック）
 # ---------------------------------------------------------------------------
 build_xcodebuild() {
-  log "xcodebuild archive を開始（プロファイル: $PROFILE）..."
+  log "xcodebuild archive を開始（プロファイル: ${PROFILE}）..."
 
   case "$PROFILE" in
     development)
@@ -140,6 +140,7 @@ build_xcodebuild() {
     -archivePath "$ARCHIVE_PATH" \
     -destination "generic/platform=iOS" \
     CODE_SIGN_STYLE="Automatic" \
+    -allowProvisioningUpdates \
     clean archive
 
   [[ -d "$ARCHIVE_PATH" ]] || fail "アーカイブが作成されませんでした: $ARCHIVE_PATH"
@@ -149,7 +150,8 @@ build_xcodebuild() {
     -exportArchive \
     -archivePath "$ARCHIVE_PATH" \
     -exportOptionsPlist "$EXPORT_OPTIONS_PLIST" \
-    -exportPath "$OUTPUT_DIR"
+    -exportPath "$OUTPUT_DIR" \
+    -allowProvisioningUpdates
 
   log "IPA エクスポート先: $OUTPUT_DIR"
   ls -lh "$OUTPUT_DIR"/*.ipa 2>/dev/null || log "WARNING: $OUTPUT_DIR に .ipa が見つかりません"

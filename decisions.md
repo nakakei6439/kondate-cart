@@ -34,6 +34,18 @@
 - **料理削除ボタンをセクションヘッダーから料理名行へ移動** — 複数料理時の削除ボタンがスクロールで隠れる問題を解消。料理名 TextInput 右横にゴミ箱アイコンを配置し、常に見える位置に固定
 - **カレンダーセルへの副菜追加＋ボタンは不採用** — 一度実装したが、シンプルさ優先のため削除。副菜追加はシート内の「副菜・もう一品を追加」ボタン経由に統一
 
+## 2026-03-19〜20（App Store 審査対応 / 1.0.2 リリース）
+
+- **ATT ダイアログが iOS 26 で表示されない原因を「タイミング問題」と特定** — `useEffect` は React マウント直後に実行されるが、iOS 17+ では UIWindow が完全にアクティブになる前に `ATTrackingManager.requestTrackingAuthorization()` を呼ぶとダイアログが無音で無視される仕様があった
+- **ATT リクエストを `AppState === 'active'` 確認 + 300ms 遅延後に実行するよう変更** — `_layout.tsx` で `AppState.addEventListener` を使い UIWindow の準備完了を待ってから `requestTrackingPermissionsAsync()` を呼ぶ方式に変更。重複実行防止のため `initialized` ref を追加
+- **`expo-tracking-transparency` のパッケージ更新は不要と判断** — CHANGELOG を確認した結果、iOS 26 固有の修正は含まれておらず、問題はパッケージではなく呼び出し側のタイミング制御の欠如が原因だった
+- **EAS クラウドビルドが月次上限到達のため `xcodebuild` に切り替え** — 無料プランのビルド枠を消費済みだったため、`npm run build:ios:xcode:production` でローカルビルドを実施
+- **Xcode の DEVELOPMENT_TEAM を `5Z6T9SM259` → `7PTQ6W4R3T` に修正** — `app.json`・`ExportOptions-production.plist`・`ios/app.xcodeproj/project.pbxproj` の 3 箇所で誤った Team ID が使われていた。Xcode にログイン済みのアカウント（`7PTQ6W4R3T`）に統一
+- **アーカイブを `~/Library/Developer/Xcode/Archives/` に移動して Organizer から配布** — `xcodebuild` のカスタム出力パスでは Xcode Organizer に表示されないため、`cp -r` で Xcode のデフォルトアーカイブフォルダに移動後に Distribute App → App Store Connect → Upload を実施
+- **TestFlight で ATT ダイアログ表示を確認して修正成功を検証** — 実機の TestFlight ビルドで初回起動時に ATT ダイアログが正しく表示されることを確認。App Store 再申請に進む
+- **App Store Connect のマーケティングURLが空欄だったことを確認し設定方針を決定** — AdMob「Verify app」が「app-ads.txt の情報が一致しない」エラーで失敗していた原因。app-ads.txt 自体（`pub-6037843763000573`）は正しく、マーケティングURLの未設定が問題だった。`https://nakakei6439.github.io/kondate-cart/` を設定する方針に決定
+- **AdMob「承認状況：要審査」の解消は App Store 審査通過後に行う方針** — マーケティングURL変更はバージョン審査が必要（「変更内容は次のアプリバージョンでリリースされます」）。審査通過後に AdMob「Verify app」を再実行して承認を完了させる
+
 ## 2026-03-16
 
 - **副菜追加ボタンをヘッダー右上の⊕アイコンに集約** — スクロールエリア内の大きな点線ボーダーボタン（「副菜・もう一品を追加」）を廃止し、ヘッダー右上の `add-circle-outline` アイコン（Ionicons）のみに変更。4案（アイコンのみ・ピル型・テキストのみ・アイコン+テキスト）の中から案A（アイコンのみ）を採用。コンパクトさと常時表示を両立
