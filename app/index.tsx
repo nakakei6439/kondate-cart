@@ -98,7 +98,7 @@ export default function MenuScreen() {
             <Ionicons name="settings-outline" size={22} color="#8E8E93" />
           </TouchableOpacity>
           {hasAnyEntry && (
-            <TouchableOpacity onPress={handleClearWeek} style={styles.clearWeekBtn}>
+            <TouchableOpacity onPress={handleClearWeek} style={styles.clearWeekBtn} accessibilityLabel="週を全削除">
               <Ionicons name="trash-outline" size={22} color="#8E8E93" />
             </TouchableOpacity>
           )}

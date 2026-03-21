@@ -66,7 +66,14 @@ export const usePurchaseStore = create<PurchaseState>((set) => ({
       set({ isPremium, isLoading: false });
       return { success: true };
     } catch (e: unknown) {
-      console.error('[IAP] purchasePremium error:', JSON.stringify(e), e);
+      const err = e as Record<string, unknown>;
+      console.error('[IAP] purchasePremium error detail:', {
+        message: err?.message,
+        code: err?.code,
+        readableErrorCode: err?.readableErrorCode,
+        underlyingErrorMessage: err?.underlyingErrorMessage,
+        userCancelled: err?.userCancelled,
+      });
       set({ isLoading: false });
       // ユーザーキャンセルは正常扱い
       if (e && typeof e === 'object' && 'userCancelled' in e && (e as { userCancelled: boolean }).userCancelled) {

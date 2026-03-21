@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { ShoppingItem, WeekMenu } from '../types';
+import { aggregateIngredients } from '../utils/shoppingUtils';
 
 type ShoppingMode = 'nextWeek' | 'twoWeeks';
 
@@ -12,32 +13,6 @@ interface ShoppingState {
   addItem: (name: string, amount: string) => void;
   toggleItem: (name: string) => void;
   removeByName: (name: string) => void;
-}
-
-function aggregateIngredients(menus: WeekMenu[]): ShoppingItem[] {
-  // 同名食材の量をまとめる（カンマ区切り）
-  const map = new Map<string, string[]>();
-
-  for (const menu of menus) {
-    for (const dayRecord of Object.values(menu.days)) {
-      if (!dayRecord) continue;
-      for (const dish of dayRecord.dishes) {
-        for (const ing of dish.ingredients) {
-          const name = ing.name.trim();
-          if (!name) continue;
-          const existing = map.get(name) ?? [];
-          existing.push(ing.amount);
-          map.set(name, existing);
-        }
-      }
-    }
-  }
-
-  return Array.from(map.entries()).map(([name, amounts]) => ({
-    name,
-    amount: amounts.filter((a) => a.trim()).join('、'),
-    checked: false,
-  }));
 }
 
 export const useShoppingStore = create<ShoppingState>((set) => ({
