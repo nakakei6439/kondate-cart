@@ -1,29 +1,30 @@
+import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   Alert,
-  Animated,
   KeyboardAvoidingView,
   Modal,
   Platform,
+  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  TouchableWithoutFeedback,
   View,
 } from 'react-native';
 import { Swipeable } from 'react-native-gesture-handler';
-import { DayEntry, DayKey, DishRecord, Ingredient } from '../types';
+import { DayKey, DayRecord, DishEntry, DishRecord } from '../types';
 import { getDayLabel } from '../utils/weekUtils';
 
 interface Props {
   visible: boolean;
   dayKey: DayKey | null;
-  initialEntry: DayEntry | null;
+  initialEntry: DayRecord | null;
   dishes: DishRecord[];
-  onSave: (day: DayKey, entry: DayEntry) => void;
+  appendNewDish?: boolean;
+  onSave: (day: DayKey, record: DayRecord) => void;
   onClear: (day: DayKey) => void;
   onClose: () => void;
 }
@@ -33,106 +34,157 @@ export default function DayEntrySheet({
   dayKey,
   initialEntry,
   dishes,
+  appendNewDish,
   onSave,
   onClear,
   onClose,
 }: Props) {
-  const slideAnim = useRef(new Animated.Value(600)).current;
   const isDirty = useRef(false);
+  const scrollRef = useRef<React.ElementRef<typeof ScrollView>>(null);
+  const prevDishCountRef = useRef(1);
+  const prevIngCountRef = useRef(1);
 
-  const [dishName, setDishName] = useState('');
-  const [ingredients, setIngredients] = useState<Ingredient[]>([{ name: '', amount: '' }]);
+  const [dayDishes, setDayDishes] = useState<DishEntry[]>([{ dishName: '', ingredients: [{ name: '', amount: '' }] }]);
   const [note, setNote] = useState('');
+  const [activeHistoryIdx, setActiveHistoryIdx] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [showHistory, setShowHistory] = useState(false);
 
   useEffect(() => {
-    if (visible) {
-      Animated.spring(slideAnim, {
-        toValue: 0,
-        useNativeDriver: true,
-        tension: 65,
-        friction: 11,
-      }).start();
-    } else {
-      Animated.timing(slideAnim, {
-        toValue: 600,
-        duration: 250,
-        useNativeDriver: true,
-      }).start();
+    const totalIngs = dayDishes.reduce((sum, d) => sum + d.ingredients.length, 0);
+    const dishAdded = dayDishes.length > prevDishCountRef.current;
+    const ingAdded = totalIngs > prevIngCountRef.current;
+    if (dishAdded || ingAdded) {
+      setTimeout(() => {
+        scrollRef.current?.scrollToEnd({ animated: true });
+      }, 100);
     }
-  }, [visible]);
+    prevDishCountRef.current = dayDishes.length;
+    prevIngCountRef.current = totalIngs;
+  }, [dayDishes]);
 
   useEffect(() => {
     if (visible) {
       isDirty.current = false;
       if (initialEntry) {
-        setDishName(initialEntry.dishName);
-        setIngredients(
-          initialEntry.ingredients.length > 0
-            ? initialEntry.ingredients
-            : [{ name: '', amount: '' }]
+        const baseDishes =
+          initialEntry.dishes.length > 0
+            ? initialEntry.dishes.map((d) => ({
+                dishName: d.dishName,
+                ingredients: d.ingredients.length > 0 ? d.ingredients : [{ name: '', amount: '' }],
+              }))
+            : [{ dishName: '', ingredients: [{ name: '', amount: '' }] }];
+        setDayDishes(
+          appendNewDish
+            ? [...baseDishes, { dishName: '', ingredients: [{ name: '', amount: '' }] }]
+            : baseDishes
         );
         setNote(initialEntry.note);
       } else {
-        setDishName('');
-        setIngredients([{ name: '', amount: '' }]);
+        setDayDishes([{ dishName: '', ingredients: [{ name: '', amount: '' }] }]);
         setNote('');
       }
+      setActiveHistoryIdx(null);
       setSearchQuery('');
-      setShowHistory(false);
     }
   }, [visible, initialEntry]);
 
-  const filteredDishes = dishes.filter((d) => d.name.includes(searchQuery));
+  const filteredHistory = dishes.filter((d) => d.name.includes(searchQuery));
 
   function markDirty() {
     isDirty.current = true;
   }
 
-  function selectDish(dish: DishRecord) {
-    setDishName(dish.name);
-    setIngredients(dish.ingredients.length > 0 ? [...dish.ingredients] : [{ name: '', amount: '' }]);
-    setShowHistory(false);
+  function updateDishName(dishIdx: number, value: string) {
+    setDayDishes((prev) => {
+      const next = [...prev];
+      next[dishIdx] = { ...next[dishIdx], dishName: value };
+      return next;
+    });
+    setActiveHistoryIdx(dishIdx);
+    setSearchQuery(value);
+    markDirty();
+  }
+
+  function toggleHistory(dishIdx: number) {
+    if (activeHistoryIdx === dishIdx) {
+      setActiveHistoryIdx(null);
+    } else {
+      setActiveHistoryIdx(dishIdx);
+      setSearchQuery(dayDishes[dishIdx].dishName);
+    }
+  }
+
+  function selectDishFromHistory(dishIdx: number, dish: DishRecord) {
+    setDayDishes((prev) => {
+      const next = [...prev];
+      next[dishIdx] = {
+        dishName: dish.name,
+        ingredients: dish.ingredients.length > 0 ? [...dish.ingredients] : [{ name: '', amount: '' }],
+      };
+      return next;
+    });
+    setActiveHistoryIdx(null);
     setSearchQuery('');
     markDirty();
   }
 
-  function updateIngredient(index: number, field: 'name' | 'amount', value: string) {
-    setIngredients((prev) => {
+  function updateIngredient(dishIdx: number, ingIdx: number, field: 'name' | 'amount', value: string) {
+    setDayDishes((prev) => {
       const next = [...prev];
-      next[index] = { ...next[index], [field]: value };
+      const ings = [...next[dishIdx].ingredients];
+      ings[ingIdx] = { ...ings[ingIdx], [field]: value };
+      next[dishIdx] = { ...next[dishIdx], ingredients: ings };
       return next;
     });
     markDirty();
   }
 
-  function addIngredient() {
-    setIngredients((prev) => [...prev, { name: '', amount: '' }]);
+  function addIngredient(dishIdx: number) {
+    setDayDishes((prev) => {
+      const next = [...prev];
+      next[dishIdx] = { ...next[dishIdx], ingredients: [...next[dishIdx].ingredients, { name: '', amount: '' }] };
+      return next;
+    });
     markDirty();
   }
 
-  function removeIngredient(index: number) {
-    setIngredients((prev) => prev.filter((_, i) => i !== index));
+  function removeIngredient(dishIdx: number, ingIdx: number) {
+    setDayDishes((prev) => {
+      const next = [...prev];
+      next[dishIdx] = { ...next[dishIdx], ingredients: next[dishIdx].ingredients.filter((_, i) => i !== ingIdx) };
+      return next;
+    });
+    markDirty();
+  }
+
+  function addDish() {
+    setDayDishes((prev) => [...prev, { dishName: '', ingredients: [{ name: '', amount: '' }] }]);
+    setActiveHistoryIdx(null);
+    markDirty();
+  }
+
+  function removeDish(dishIdx: number) {
+    setDayDishes((prev) => prev.filter((_, i) => i !== dishIdx));
+    if (activeHistoryIdx === dishIdx) setActiveHistoryIdx(null);
     markDirty();
   }
 
   function handleSave() {
     if (!dayKey) return;
-    const trimmedDishName = dishName.trim();
-    const filtered = ingredients.filter((i) => i.name.trim());
+    const cleanedDishes = dayDishes
+      .map((d) => ({
+        dishName: d.dishName.trim(),
+        ingredients: d.ingredients.filter((i) => i.name.trim()),
+      }))
+      .filter((d) => d.dishName || d.ingredients.length > 0);
     const trimmedNote = note.trim();
-    if (!trimmedDishName && filtered.length === 0 && !trimmedNote) {
+    if (cleanedDishes.length === 0 && !trimmedNote) {
       isDirty.current = false;
       onClose();
       return;
     }
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    onSave(dayKey, {
-      dishName: trimmedDishName,
-      ingredients: filtered,
-      note: trimmedNote,
-    });
+    onSave(dayKey, { dishes: cleanedDishes, note: trimmedNote });
     isDirty.current = false;
     onClose();
   }
@@ -172,142 +224,155 @@ export default function DayEntrySheet({
     }
   }
 
-  if (!visible) return null;
-
   return (
-    <Modal transparent animationType="none" visible={visible} onRequestClose={handleClose}>
-      <TouchableWithoutFeedback onPress={handleClose}>
-        <View style={styles.overlay} />
-      </TouchableWithoutFeedback>
-
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.kavContainer}
-      >
-        <Animated.View style={[styles.sheet, { transform: [{ translateY: slideAnim }] }]}>
-          <View style={styles.handle} />
-
+    <Modal transparent={false} animationType="slide" visible={visible} onRequestClose={handleClose}>
+      <SafeAreaView style={styles.safeArea}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.sheet}
+        >
           <View style={styles.header}>
+            <TouchableOpacity onPress={handleClose} style={styles.backBtn}>
+              <Text style={styles.backBtnText}>‹ 戻る</Text>
+            </TouchableOpacity>
             <Text style={styles.headerTitle}>
               {dayKey ? getDayLabel(dayKey) + '曜日の献立' : ''}
             </Text>
-            <TouchableOpacity onPress={handleClose} style={styles.closeBtn}>
-              <Text style={styles.closeBtnText}>✕</Text>
+            <TouchableOpacity onPress={addDish} style={styles.addDishIconBtn}>
+              <Ionicons name="add-circle-outline" size={26} color="#E8692A" />
             </TouchableOpacity>
           </View>
 
           <ScrollView
+            ref={scrollRef}
             style={styles.body}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
-            {/* 料理名 */}
-            <Text style={styles.label}>料理名</Text>
-            <View style={styles.dishNameRow}>
-              <TextInput
-                style={styles.dishNameInput}
-                value={dishName}
-                onChangeText={(t) => {
-                  setDishName(t);
-                  setSearchQuery(t);
-                  setShowHistory(t.length > 0);
-                  markDirty();
-                }}
-                placeholder="例: 肉じゃが"
-                placeholderTextColor="#C7C7CC"
-                returnKeyType="done"
-              />
-              <TouchableOpacity
-                style={styles.historyBtn}
-                onPress={() => setShowHistory((v) => !v)}
-              >
-                <Text style={styles.historyBtnText}>履歴</Text>
-              </TouchableOpacity>
-            </View>
+            {dayDishes.map((dish, dishIdx) => {
+              return (
+                <View key={dishIdx}>
+                  {/* Dish section header */}
+                  <Text style={styles.label}>料理 {dishIdx + 1}</Text>
 
-            {/* 過去の料理履歴 */}
-            {showHistory && filteredDishes.length > 0 && (
-              <View style={styles.historyList}>
-                {filteredDishes.slice(0, 8).map((dish) => (
-                  <TouchableOpacity
-                    key={dish.id}
-                    style={styles.historyItem}
-                    onPress={() => selectDish(dish)}
-                  >
-                    <Text style={styles.historyItemText}>{dish.name}</Text>
-                    <Text style={styles.historyItemSub}>
-                      {dish.ingredients.map((i) => i.name).filter(Boolean).join('、')}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            )}
-
-            {/* 材料（グループ化スタイル） */}
-            <Text style={[styles.label, { marginTop: 16 }]}>材料</Text>
-            <View style={styles.ingredientGroup}>
-              {ingredients.map((ing, index) => {
-                const isFirst = index === 0;
-                const isLast = index === ingredients.length - 1;
-                const rowRadius = {
-                  borderTopLeftRadius: isFirst ? 12 : 0,
-                  borderTopRightRadius: isFirst ? 12 : 0,
-                  borderBottomLeftRadius: isLast ? 12 : 0,
-                  borderBottomRightRadius: isLast ? 12 : 0,
-                };
-                return (
-                  <View key={index}>
-                    <Swipeable
-                      renderRightActions={() => (
-                        <TouchableOpacity
-                          style={[styles.swipeDeleteBtn, {
-                            borderTopRightRadius: isFirst ? 12 : 0,
-                            borderBottomRightRadius: isLast ? 12 : 0,
-                          }]}
-                          onPress={() => {
-                            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                            removeIngredient(index);
-                          }}
-                        >
-                          <Text style={styles.swipeDeleteText}>削除</Text>
-                        </TouchableOpacity>
-                      )}
-                      overshootRight={false}
+                  {/* Dish name */}
+                  <View style={styles.dishNameRow}>
+                    <TextInput
+                      style={styles.dishNameInput}
+                      value={dish.dishName}
+                      onChangeText={(t) => updateDishName(dishIdx, t)}
+                      placeholder="例: 肉じゃが"
+                      placeholderTextColor="#C7C7CC"
+                      returnKeyType="done"
+                    />
+                    <TouchableOpacity
+                      style={styles.historyBtn}
+                      onPress={() => toggleHistory(dishIdx)}
                     >
-                      <View style={[styles.ingredientRow, rowRadius]}>
-                        <TextInput
-                          style={styles.ingredientNameInput}
-                          value={ing.name}
-                          onChangeText={(t) => updateIngredient(index, 'name', t)}
-                          placeholder="食材名"
-                          placeholderTextColor="#C7C7CC"
-                          returnKeyType="next"
-                        />
-                        <View style={styles.ingredientVerticalDivider} />
-                        <TextInput
-                          style={styles.ingredientAmountInput}
-                          value={ing.amount}
-                          onChangeText={(t) => updateIngredient(index, 'amount', t)}
-                          placeholder="量"
-                          placeholderTextColor="#C7C7CC"
-                          returnKeyType="done"
-                        />
-                      </View>
-                    </Swipeable>
-                    {index < ingredients.length - 1 && (
-                      <View style={styles.rowSeparator} />
+                      <Text style={styles.historyBtnText}>履歴</Text>
+                    </TouchableOpacity>
+                    {dayDishes.length > 1 && (
+                      <TouchableOpacity
+                        style={styles.removeDishIconBtn}
+                        onPress={() => {
+                          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                          removeDish(dishIdx);
+                        }}
+                      >
+                        <Ionicons name="trash-outline" size={18} color="#FF3B30" />
+                      </TouchableOpacity>
                     )}
                   </View>
-                );
-              })}
-            </View>
 
-            <TouchableOpacity style={styles.addIngredientBtn} onPress={addIngredient}>
-              <Text style={styles.addIngredientText}>＋ 材料を追加</Text>
-            </TouchableOpacity>
+                  {/* History list */}
+                  {activeHistoryIdx === dishIdx && filteredHistory.length > 0 && (
+                    <View style={styles.historyList}>
+                      {filteredHistory.slice(0, 8).map((d) => (
+                        <TouchableOpacity
+                          key={d.id}
+                          style={styles.historyItem}
+                          onPress={() => selectDishFromHistory(dishIdx, d)}
+                        >
+                          <Text style={styles.historyItemText}>{d.name}</Text>
+                          <Text style={styles.historyItemSub}>
+                            {d.ingredients.map((i) => i.name).filter(Boolean).join('、')}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  )}
 
-            {/* メモ */}
-            <Text style={[styles.label, { marginTop: 16 }]}>メモ</Text>
+                  {/* Ingredients */}
+                  <Text style={[styles.label, { marginTop: 16 }]}>材料</Text>
+                  <View style={styles.ingredientGroup}>
+                    {dish.ingredients.map((ing, ingIdx) => {
+                      const isFirst = ingIdx === 0;
+                      const isLast = ingIdx === dish.ingredients.length - 1;
+                      const rowRadius = {
+                        borderTopLeftRadius: isFirst ? 12 : 0,
+                        borderTopRightRadius: isFirst ? 12 : 0,
+                        borderBottomLeftRadius: isLast ? 12 : 0,
+                        borderBottomRightRadius: isLast ? 12 : 0,
+                      };
+                      return (
+                        <View key={ingIdx}>
+                          <Swipeable
+                            renderRightActions={() => (
+                              <TouchableOpacity
+                                style={[styles.swipeDeleteBtn, {
+                                  borderTopRightRadius: isFirst ? 12 : 0,
+                                  borderBottomRightRadius: isLast ? 12 : 0,
+                                }]}
+                                onPress={() => {
+                                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                                  removeIngredient(dishIdx, ingIdx);
+                                }}
+                              >
+                                <Text style={styles.swipeDeleteText}>削除</Text>
+                              </TouchableOpacity>
+                            )}
+                            overshootRight={false}
+                          >
+                            <View style={[styles.ingredientRow, rowRadius]}>
+                              <TextInput
+                                style={styles.ingredientNameInput}
+                                value={ing.name}
+                                onChangeText={(t) => updateIngredient(dishIdx, ingIdx, 'name', t)}
+                                placeholder="食材名"
+                                placeholderTextColor="#C7C7CC"
+                                returnKeyType="next"
+                              />
+                              <View style={styles.ingredientVerticalDivider} />
+                              <TextInput
+                                style={styles.ingredientAmountInput}
+                                value={ing.amount}
+                                onChangeText={(t) => updateIngredient(dishIdx, ingIdx, 'amount', t)}
+                                placeholder="量"
+                                placeholderTextColor="#C7C7CC"
+                                returnKeyType="done"
+                              />
+                            </View>
+                          </Swipeable>
+                          {ingIdx < dish.ingredients.length - 1 && (
+                            <View style={styles.rowSeparator} />
+                          )}
+                        </View>
+                      );
+                    })}
+                  </View>
+
+                  <TouchableOpacity style={styles.addIngredientBtn} onPress={() => addIngredient(dishIdx)}>
+                    <Text style={styles.addIngredientText}>＋ 材料を追加</Text>
+                  </TouchableOpacity>
+
+                  {/* Divider between dishes */}
+                  {dishIdx < dayDishes.length - 1 && <View style={styles.dishDivider} />}
+                </View>
+              );
+            })}
+
+            {/* Note */}
+            <Text style={[styles.label, { marginTop: 8 }]}>メモ</Text>
             <TextInput
               style={styles.noteInput}
               value={note}
@@ -321,57 +386,30 @@ export default function DayEntrySheet({
           </ScrollView>
 
           <View style={styles.footer}>
-            {initialEntry && (
-              <TouchableOpacity style={styles.clearBtn} onPress={handleClear}>
-                <Text style={styles.clearBtnText}>削除</Text>
-              </TouchableOpacity>
-            )}
             <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
               <Text style={styles.saveBtnText}>保存</Text>
             </TouchableOpacity>
           </View>
-        </Animated.View>
-      </KeyboardAvoidingView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
     </Modal>
   );
 }
 
 const styles = StyleSheet.create({
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-  },
-  kavContainer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
   },
   sheet: {
+    flex: 1,
     backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    maxHeight: '90%',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -3 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 10,
-  },
-  handle: {
-    width: 36,
-    height: 5,
-    backgroundColor: '#E0E0E0',
-    borderRadius: 3,
-    alignSelf: 'center',
-    marginTop: 10,
-    marginBottom: 4,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
+    paddingHorizontal: 8,
     paddingVertical: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: '#C6C6C8',
@@ -381,8 +419,21 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#1C1C1E',
   },
-  closeBtn: { padding: 4 },
-  closeBtnText: { fontSize: 18, color: '#8E8E93' },
+  backBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    minWidth: 70,
+  },
+  backBtnText: {
+    fontSize: 17,
+    color: '#E8692A',
+  },
+  addDishIconBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    minWidth: 70,
+    alignItems: 'flex-end',
+  },
   body: {
     paddingHorizontal: 20,
     paddingTop: 16,
@@ -394,6 +445,19 @@ const styles = StyleSheet.create({
     marginBottom: 6,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
+  },
+  removeDishIconBtn: {
+    width: 44,
+    height: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#FFF2F2',
+    borderRadius: 10,
+  },
+  dishDivider: {
+    height: 1,
+    backgroundColor: '#E5E5EA',
+    marginVertical: 20,
   },
   dishNameRow: {
     flexDirection: 'row',
@@ -444,7 +508,6 @@ const styles = StyleSheet.create({
     color: '#8E8E93',
     marginTop: 2,
   },
-  // グループ化材料スタイル
   ingredientGroup: {
     borderRadius: 12,
   },
@@ -518,21 +581,8 @@ const styles = StyleSheet.create({
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: '#C6C6C8',
   },
-  clearBtn: {
-    flex: 1,
-    height: 50,
-    backgroundColor: '#F2F2F7',
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  clearBtnText: {
-    fontSize: 16,
-    color: '#FF3B30',
-    fontWeight: '600',
-  },
   saveBtn: {
-    flex: 2,
+    flex: 1,
     height: 50,
     backgroundColor: '#E8692A',
     borderRadius: 12,

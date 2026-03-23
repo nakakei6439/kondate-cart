@@ -11,10 +11,15 @@ export interface DishRecord {
   updatedAt: string;
 }
 
-// 1日の献立
-export interface DayEntry {
+// 1料理分のデータ（主菜・副菜など）
+export interface DishEntry {
   dishName: string;
-  ingredients: Ingredient[]; // DishRecord からコピー・週ごとに編集可
+  ingredients: Ingredient[];
+}
+
+// 1日の献立（複数料理 + 日単位メモ）
+export interface DayRecord {
+  dishes: DishEntry[];
   note: string;
 }
 
@@ -23,7 +28,7 @@ export type DayKey = 'Mon' | 'Tue' | 'Wed' | 'Thu' | 'Fri' | 'Sat' | 'Sun';
 // 1週間の献立
 export interface WeekMenu {
   weekKey: string; // "2026-W09"
-  days: Partial<Record<DayKey, DayEntry>>;
+  days: Partial<Record<DayKey, DayRecord>>;
 }
 
 export interface ShoppingItem {

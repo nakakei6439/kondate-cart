@@ -27,6 +27,30 @@
 - **`expo-file-system/legacy` を採用** — expo-file-system v19 で旧API（`writeAsStringAsync` 等）が廃止になったため、`expo-file-system/legacy` 経由で使用する方針に決定
 - **`importData()` の戻り値を `boolean` に変更** — DocumentPicker キャンセル時にも「インポート完了」アラートが表示されるバグを修正。`false`（キャンセル）/ `true`（成功）を返し、呼び出し元でチェックする
 
+- **1日複数料理対応の型設計: `DishEntry` + `DayRecord` に分割** — `DayEntry`（1料理+note）を廃止。`DishEntry`（料理名+材料のみ）と `DayRecord`（dishes[] + note）に分離し、1日に主菜・副菜など複数料理を管理できるようにした
+- **旧データの自動マイグレーションを採用** — `migrateDayRecord()` を `menuStorage.ts` に追加。旧 DayEntry 形式（`dishName`/`ingredients`/`note` がトップレベル）を検出したら自動で新形式に変換。既存ユーザーデータが壊れない
+- **献立入力シートを全画面モーダルに変更** — ボトムシート（`transparent=true` + 自前 Animated スライド）から `animationType="slide"` の全画面 Modal に切り替え。`SafeAreaView` でノッチ対応。ヘッダーの「✕」→「‹ 戻る」に変更（iOS ナビゲーション慣習に合わせる）
+- **フッターの削除ボタンを廃止** — 献立入力画面下部の「削除」ボタンを削除し、「保存」ボタンのみ全幅表示に変更。削除操作はスワイプ削除に一本化してUIをシンプルに保つ
+- **料理削除ボタンをセクションヘッダーから料理名行へ移動** — 複数料理時の削除ボタンがスクロールで隠れる問題を解消。料理名 TextInput 右横にゴミ箱アイコンを配置し、常に見える位置に固定
+- **カレンダーセルへの副菜追加＋ボタンは不採用** — 一度実装したが、シンプルさ優先のため削除。副菜追加はシート内の「副菜・もう一品を追加」ボタン経由に統一
+
+## 2026-03-19〜20（App Store 審査対応 / 1.0.2 リリース）
+
+- **ATT ダイアログが iOS 26 で表示されない原因を「タイミング問題」と特定** — `useEffect` は React マウント直後に実行されるが、iOS 17+ では UIWindow が完全にアクティブになる前に `ATTrackingManager.requestTrackingAuthorization()` を呼ぶとダイアログが無音で無視される仕様があった
+- **ATT リクエストを `AppState === 'active'` 確認 + 300ms 遅延後に実行するよう変更** — `_layout.tsx` で `AppState.addEventListener` を使い UIWindow の準備完了を待ってから `requestTrackingPermissionsAsync()` を呼ぶ方式に変更。重複実行防止のため `initialized` ref を追加
+- **`expo-tracking-transparency` のパッケージ更新は不要と判断** — CHANGELOG を確認した結果、iOS 26 固有の修正は含まれておらず、問題はパッケージではなく呼び出し側のタイミング制御の欠如が原因だった
+- **EAS クラウドビルドが月次上限到達のため `xcodebuild` に切り替え** — 無料プランのビルド枠を消費済みだったため、`npm run build:ios:xcode:production` でローカルビルドを実施
+- **Xcode の DEVELOPMENT_TEAM を `5Z6T9SM259` → `7PTQ6W4R3T` に修正** — `app.json`・`ExportOptions-production.plist`・`ios/app.xcodeproj/project.pbxproj` の 3 箇所で誤った Team ID が使われていた。Xcode にログイン済みのアカウント（`7PTQ6W4R3T`）に統一
+- **アーカイブを `~/Library/Developer/Xcode/Archives/` に移動して Organizer から配布** — `xcodebuild` のカスタム出力パスでは Xcode Organizer に表示されないため、`cp -r` で Xcode のデフォルトアーカイブフォルダに移動後に Distribute App → App Store Connect → Upload を実施
+- **TestFlight で ATT ダイアログ表示を確認して修正成功を検証** — 実機の TestFlight ビルドで初回起動時に ATT ダイアログが正しく表示されることを確認。App Store 再申請に進む
+- **App Store Connect のマーケティングURLが空欄だったことを確認し設定方針を決定** — AdMob「Verify app」が「app-ads.txt の情報が一致しない」エラーで失敗していた原因。app-ads.txt 自体（`pub-6037843763000573`）は正しく、マーケティングURLの未設定が問題だった。`https://nakakei6439.github.io/kondate-cart/` を設定する方針に決定
+- **AdMob「承認状況：要審査」の解消は App Store 審査通過後に行う方針** — マーケティングURL変更はバージョン審査が必要（「変更内容は次のアプリバージョンでリリースされます」）。審査通過後に AdMob「Verify app」を再実行して承認を完了させる
+
+## 2026-03-16
+
+- **副菜追加ボタンをヘッダー右上の⊕アイコンに集約** — スクロールエリア内の大きな点線ボーダーボタン（「副菜・もう一品を追加」）を廃止し、ヘッダー右上の `add-circle-outline` アイコン（Ionicons）のみに変更。4案（アイコンのみ・ピル型・テキストのみ・アイコン+テキスト）の中から案A（アイコンのみ）を採用。コンパクトさと常時表示を両立
+- **料理・材料追加時に ScrollView を自動スクロール** — 追加した行が画面外で見えない問題を解消。`scrollRef` + `useEffect([dayDishes])` で料理数・材料総数の増加を検知し `scrollToEnd({ animated: true })` を実行。料理追加と材料追加を1つの useEffect にまとめて重複スクロールを防止
+
 ---
 
 ## IAP トラブルシューティング

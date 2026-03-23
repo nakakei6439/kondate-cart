@@ -1,0 +1,70 @@
+appId: com.nakakei6439.kondatecart
+name: 空状態・料理名なし・メモのみ登録
+tags:
+  - edge-cases
+
+---
+# 状態リセット
+- stopApp
+- launchApp
+- waitForAnimationToEnd:
+    timeout: 8000
+- tapOn:
+    text: "Dismiss"
+    optional: true
+
+# 3週先へ移動
+- tapOn:
+    text: "›"
+- tapOn:
+    text: "›"
+- tapOn:
+    text: "›"
+
+# この週にデータがあれば全削除してリセット（繰り返し実行時の冪等性を確保）
+- tapOn:
+    text: "週を全削除"
+    optional: true
+- tapOn:
+    text: "削除"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 500
+
+# 空の日（先頭セル）をタップ
+- tapOn:
+    text: ".*タップして入力.*"
+    index: 0
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# 料理名は空のままメモのみ入力
+- tapOn:
+    text: "例: 外食、残り物など"
+- inputText: "E2Eメモのみテスト"
+
+# 保存（料理名なしでも保存できること）
+- tapOn:
+    text: "保存"
+- tapOn:
+    text: "Dismiss"
+    optional: true
+
+# クラッシュせずに献立画面に戻っていること
+- assertVisible:
+    text: "献立カート"
+
+# 買い物タブが正常表示されること（メモのみ登録でクラッシュしないことを確認）
+- tapOn:
+    text: ".*買い物.*tab.*"
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    text: "Dismiss"
+    optional: true
+- tapOn:
+    text: ".*買い物.*tab.*"
+- waitForAnimationToEnd:
+    timeout: 1000
+- assertVisible:
+    text: "買い物リスト"

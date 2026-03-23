@@ -1,0 +1,80 @@
+appId: com.nakakei6439.kondatecart
+name: 買い物リスト集計・モード切替・チェック保持
+tags:
+  - shopping
+  - aggregate
+
+---
+# 状態リセット
+- stopApp
+- launchApp
+- waitForAnimationToEnd:
+    timeout: 8000
+# AdMobエラーダイアログが出ていれば閉じる
+- tapOn:
+    text: "Dismiss"
+    optional: true
+
+# 来週の水曜（麻婆豆腐）をタップして食材を追加
+- tapOn:
+    text: ".*麻婆豆腐.*"
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# 既存料理に材料を追加
+- tapOn:
+    text: "＋ 材料を追加"
+
+# 食材名を入力
+- tapOn:
+    text: "食材名"
+- inputText: "豆腐E2E"
+
+# 量を入力
+- tapOn:
+    text: "量"
+- inputText: "1丁"
+
+# 保存
+- tapOn:
+    text: "保存"
+- waitForAnimationToEnd:
+    timeout: 2000
+# 保存後エラーダイアログが出ていれば閉じる
+- tapOn:
+    text: "Dismiss"
+    optional: true
+
+# 買い物タブに移動
+- tapOn:
+    text: ".*買い物.*tab.*"
+- waitForAnimationToEnd:
+    timeout: 3000
+# エラーダイアログが出ていれば閉じる（Dismiss後に再度タブを押す）
+- tapOn:
+    text: "Dismiss"
+    optional: true
+- tapOn:
+    text: ".*買い物.*tab.*"
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# 集計結果に食材が表示される
+- assertVisible:
+    text: ".*豆腐E2E.*"
+
+# モードを「再来週まで」に切替
+- tapOn:
+    text: "再来週まで"
+
+# 豆腐E2Eが引き続き表示されていること
+- assertVisible:
+    text: ".*豆腐E2E.*"
+
+# モードを「来週」に戻す
+- tapOn:
+    text: "来週"
+
+# 豆腐E2Eが引き続き表示されていること
+- assertVisible:
+    text: ".*豆腐E2E.*"

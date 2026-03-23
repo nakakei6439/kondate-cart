@@ -149,7 +149,7 @@ export default function HistoryScreen() {
 
       {/* 検索バー */}
       <View style={styles.searchContainer}>
-        <Text style={styles.searchIcon}>🔍</Text>
+        <Ionicons name="search" size={15} color="#8E8E93" />
         <TextInput
           style={styles.searchInput}
           value={query}
@@ -163,18 +163,21 @@ export default function HistoryScreen() {
 
       {dishes.length === 0 ? (
         <View style={styles.empty}>
-          <Text style={styles.emptyEmoji}>📋</Text>
+          <Ionicons name="document-text-outline" size={56} color="#1C1C1E" />
           <Text style={styles.emptyTitle}>料理履歴がありません</Text>
           <Text style={styles.emptyDesc}>
             献立タブで料理を登録すると{'\n'}ここに履歴が表示されます
           </Text>
           <View style={styles.emptyHint}>
-            <Text style={styles.emptyHintText}>🍽️  献立タブから登録できます</Text>
+            <View style={styles.emptyHintRow}>
+              <Ionicons name="restaurant-outline" size={16} color="#E8692A" />
+              <Text style={styles.emptyHintText}>献立タブから登録できます</Text>
+            </View>
           </View>
         </View>
       ) : filtered.length === 0 ? (
         <View style={styles.empty}>
-          <Text style={styles.emptyEmoji}>🔍</Text>
+          <Ionicons name="search-outline" size={56} color="#1C1C1E" />
           <Text style={styles.emptyTitle}>見つかりません</Text>
           <Text style={styles.emptyDesc}>「{query}」に一致する料理がありません</Text>
         </View>
@@ -362,6 +365,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '600',
     color: '#1C1C1E',
+    marginTop: 16,
     marginBottom: 8,
   },
   emptyDesc: {
@@ -376,6 +380,11 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingVertical: 12,
     paddingHorizontal: 16,
+  },
+  emptyHintRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
   emptyHintText: {
     fontSize: 14,

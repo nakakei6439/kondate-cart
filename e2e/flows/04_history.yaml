@@ -1,0 +1,82 @@
+appId: com.nakakei6439.kondatecart
+name: 履歴表示・検索・スワイプ削除
+tags:
+  - history
+
+---
+# 状態リセット
+- stopApp
+- launchApp
+- waitForAnimationToEnd:
+    timeout: 8000
+- tapOn:
+    text: "Dismiss"
+    optional: true
+
+# セットアップ: 来週の「唐揚げ履歴E2E」をタップして保存しなおす（dish store/history に upsert）
+# → 前回テストで削除された場合でも self-contained で復元できる
+- tapOn:
+    text: ".*唐揚げ履歴E2E.*"
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    text: "保存"
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    text: "Dismiss"
+    optional: true
+
+# 履歴タブに移動（Dismiss後リカバリ付き）
+- tapOn:
+    text: ".*履歴.*tab.*"
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn:
+    text: "Dismiss"
+    optional: true
+- tapOn:
+    text: ".*履歴.*tab.*"
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# 履歴に「唐揚げ履歴E2E」が表示されていること
+- assertVisible:
+    text: ".*唐揚げ履歴E2E.*"
+
+# 検索テスト
+- tapOn:
+    text: "料理名で検索..."
+- inputText: "唐揚げ履歴E2E"
+- assertVisible:
+    text: ".*唐揚げ履歴E2E.*"
+
+# 検索テキストを消去してリスト全体を表示
+- eraseText: 10
+- waitForAnimationToEnd:
+    timeout: 500
+
+# スワイプ削除（座標指定：リスト先頭アイテム y≈28% ）
+# iPhone 17 Pro: タイトル114pt + サーチバー56pt + セクションヘッダ25pt = 195pt, 最初のアイテム中心 ~234pt / 852pt ≈ 28%
+- swipe:
+    start: "90%, 28%"
+    end: "8%, 28%"
+    duration: 500
+- waitForAnimationToEnd:
+    timeout: 1000
+
+# スワイプで表示された赤い「削除」ボタンをタップ → Alert が表示される
+- tapOn:
+    text: "削除"
+- waitForAnimationToEnd:
+    timeout: 500
+
+# Alert ダイアログの「削除」ボタンをタップ → 実際の削除
+- tapOn:
+    text: "削除"
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# 履歴から消えたこと
+- assertNotVisible:
+    text: ".*唐揚げ履歴E2E.*"

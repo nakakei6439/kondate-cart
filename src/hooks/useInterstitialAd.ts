@@ -46,6 +46,11 @@ export function useInterstitialAd() {
         pendingCallbackRef.current();
         pendingCallbackRef.current = null;
       }
+      // 表示中にエラーが発生した場合も onAdClosed コールバックを実行
+      if (onAdClosedRef.current) {
+        onAdClosedRef.current();
+        onAdClosedRef.current = null;
+      }
       loadAd();
     });
     ad.load();

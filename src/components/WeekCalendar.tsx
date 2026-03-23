@@ -50,43 +50,46 @@ export default function WeekCalendar({ weekKey, weekMenu, onDayPress, onDayDelet
         return (
           <Swipeable
             key={dayKey}
-            ref={(ref) => swipeRefs.current.set(dayKey, ref)}
+            ref={(ref) => { swipeRefs.current.set(dayKey, ref); }}
             renderRightActions={(progress) => renderRightActions(progress, dayKey)}
             enabled={!!entry && !!onDayDelete}
             friction={2}
             overshootRight={false}
           >
-          <TouchableOpacity
-            style={styles.dayCell}
-            onPress={() => onDayPress(dayKey)}
-            activeOpacity={0.7}
-          >
-            <View style={styles.dayHeader}>
-              <Text style={[styles.dayLabelText, isWeekend && styles.weekend]}>
-                {getDayLabel(dayKey)}
-              </Text>
-              <Text style={[styles.dateText, isWeekend && styles.weekend]}>
-                {date.getMonth() + 1}/{date.getDate()}
-              </Text>
-            </View>
+          <View style={styles.dayCell}>
+            <TouchableOpacity
+              style={styles.dayCellPressable}
+              onPress={() => onDayPress(dayKey)}
+              activeOpacity={0.7}
+            >
+              <View style={styles.dayHeader}>
+                <Text style={[styles.dayLabelText, isWeekend && styles.weekend]}>
+                  {getDayLabel(dayKey)}
+                </Text>
+                <Text style={[styles.dateText, isWeekend && styles.weekend]}>
+                  {date.getMonth() + 1}/{date.getDate()}
+                </Text>
+              </View>
 
-            <View style={[styles.entryArea, entry && styles.entryFilled]}>
-              {entry ? (
-                <>
-                  <Text style={styles.dishName} numberOfLines={2}>
-                    {entry.dishName || entry.note || '入力済み'}
-                  </Text>
-                  {entry.note && entry.dishName ? (
-                    <Text style={styles.noteText} numberOfLines={1}>
-                      {entry.note}
+              <View style={[styles.entryArea, entry && styles.entryFilled]}>
+                {entry ? (
+                  <>
+                    <Text style={styles.dishName} numberOfLines={2}>
+                      {entry.dishes.map((d) => d.dishName).filter(Boolean).join('・') || entry.note || '入力済み'}
                     </Text>
-                  ) : null}
-                </>
-              ) : (
-                <Text style={styles.emptyText}>タップして入力</Text>
-              )}
-            </View>
-          </TouchableOpacity>
+                    {entry.note && entry.dishes.some((d) => d.dishName) ? (
+                      <Text style={styles.noteText} numberOfLines={1}>
+                        {entry.note}
+                      </Text>
+                    ) : null}
+                  </>
+                ) : (
+                  <Text style={styles.emptyText}>タップして入力</Text>
+                )}
+              </View>
+            </TouchableOpacity>
+
+          </View>
           </Swipeable>
         );
       })}
@@ -106,6 +109,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8F8F8',
     borderRadius: 12,
     overflow: 'hidden',
+  },
+  dayCellPressable: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   dayHeader: {
     width: 52,

@@ -1,0 +1,65 @@
+appId: com.nakakei6439.kondatecart
+name: 献立登録 → アプリ再起動 → データ確認
+tags:
+  - menu
+  - persistence
+
+---
+# 状態リセット
+- stopApp
+- launchApp
+- waitForAnimationToEnd:
+    timeout: 8000
+- tapOn:
+    text: "Dismiss"
+    optional: true
+
+# 献立画面はデフォルトで表示される（来週）
+# 再来週へ移動（空のデータを持つ週）
+- tapOn:
+    text: "›"
+- tapOn:
+    text: "›"
+
+# この週にデータがあれば全削除してリセット（繰り返し実行時の冪等性を確保）
+- tapOn:
+    text: "週を全削除"
+    optional: true
+- tapOn:
+    text: "削除"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 500
+
+# 月曜のセルをタップ（先頭の「タップして入力」セル）
+- tapOn:
+    text: ".*タップして入力.*"
+    index: 0
+
+# 料理名入力フィールドに入力
+- tapOn:
+    text: "例: 肉じゃが"
+- inputText: "テスト料理E2E"
+
+# 保存ボタンをタップ
+- tapOn:
+    text: "保存"
+
+# アプリ再起動（Metroには自動接続）
+- stopApp
+- launchApp
+- waitForAnimationToEnd:
+    timeout: 8000
+- tapOn:
+    text: "Dismiss"
+    optional: true
+
+# 同じ週に移動
+- tapOn:
+    text: "›"
+- tapOn:
+    text: "›"
+
+# 登録したデータが表示されていること（accessibility textは "月, 日付, 料理名" の結合形式）
+- assertVisible:
+    text: ".*テスト料理E2E.*"

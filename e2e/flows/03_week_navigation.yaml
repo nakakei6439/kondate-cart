@@ -1,0 +1,46 @@
+appId: com.nakakei6439.kondatecart
+name: 週ナビ・データ独立性・来週に戻る
+tags:
+  - navigation
+  - week
+
+---
+# 状態リセット
+- stopApp
+- launchApp
+- waitForAnimationToEnd:
+    timeout: 8000
+- tapOn:
+    text: "Dismiss"
+    optional: true
+
+# デフォルトは来週 → 週タイトルに「来週に戻る」は含まれない
+- assertVisible:
+    text: "献立カート"
+
+# 前の週へ移動（2回）
+- tapOn:
+    text: "‹"
+- tapOn:
+    text: "‹"
+
+# 「来週に戻る」を含む週タイトル要素が存在すること（正規表現で部分一致）
+- assertVisible:
+    text: ".*来週に戻る.*"
+
+# 「来週に戻る」を含む要素をタップ
+- tapOn:
+    text: ".*来週に戻る.*"
+
+# タップ後、来週に戻ったこと（「来週に戻る」が消える）
+# 週タイトル要素に「来週に戻る」が含まれなくなっていること
+- assertNotVisible:
+    text: ".*来週に戻る.*"
+
+# 次の週へ移動
+- tapOn:
+    text: "›"
+
+# 再来週に移動できていること
+- assertVisible:
+    text: "献立カート"

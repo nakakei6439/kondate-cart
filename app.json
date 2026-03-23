@@ -3,7 +3,7 @@
     "name": "献立カート",
     "slug": "kondate-cart",
     "scheme": "kondate-cart",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "orientation": "portrait",
     "platforms": [
       "ios"
@@ -17,7 +17,7 @@
         "ITSAppUsesNonExemptEncryption": false,
         "NSUserTrackingUsageDescription": "広告をパーソナライズするために使用します。"
       },
-      "appleTeamId": "5Z6T9SM259"
+      "appleTeamId": "7PTQ6W4R3T"
     },
     "plugins": [
       "expo-router",

@@ -14,6 +14,7 @@ import {
   TouchableWithoutFeedback,
   View,
 } from 'react-native';
+import { useRouter } from 'expo-router';
 import { SettingsModal } from '../src/components/SettingsModal';
 import ShoppingItemComp from '../src/components/ShoppingItem';
 import { useInterstitialAd } from '../src/hooks/useInterstitialAd';
@@ -23,6 +24,7 @@ import { WeekMenu } from '../src/types';
 import { getCurrentWeekKey, nextWeekKey } from '../src/utils/weekUtils';
 
 export default function ShoppingScreen() {
+  const router = useRouter();
   const { mode, items, setMode, generate, forceGenerate, addItem, toggleItem, removeByName } = useShoppingStore();
   const { showAd } = useInterstitialAd();
 
@@ -118,14 +120,17 @@ export default function ShoppingScreen() {
 
       {items.length === 0 ? (
         <View style={styles.empty}>
-          <Text style={styles.emptyEmoji}>🛒</Text>
+          <Ionicons name="cart-outline" size={56} color="#1C1C1E" />
           <Text style={styles.emptyTitle}>材料がありません</Text>
           <Text style={styles.emptyDesc}>
             献立タブで来週の料理と{'\n'}材料を登録してください
           </Text>
-          <View style={styles.emptyHint}>
-            <Text style={styles.emptyHintText}>🍽️  献立タブから登録できます</Text>
-          </View>
+          <TouchableOpacity style={styles.emptyHint} onPress={() => router.push('/')}>
+            <View style={styles.emptyHintRow}>
+              <Ionicons name="restaurant-outline" size={16} color="#E8692A" />
+              <Text style={styles.emptyHintText}>献立タブから登録できます</Text>
+            </View>
+          </TouchableOpacity>
         </View>
       ) : (
         <ScrollView style={styles.list}>
@@ -340,6 +345,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '600',
     color: '#1C1C1E',
+    marginTop: 16,
     marginBottom: 8,
   },
   emptyDesc: {
@@ -354,6 +360,11 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingVertical: 12,
     paddingHorizontal: 16,
+  },
+  emptyHintRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
   emptyHintText: {
     fontSize: 14,
