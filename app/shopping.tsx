@@ -14,6 +14,7 @@ import {
   TouchableWithoutFeedback,
   View,
 } from 'react-native';
+import { useRouter } from 'expo-router';
 import { SettingsModal } from '../src/components/SettingsModal';
 import ShoppingItemComp from '../src/components/ShoppingItem';
 import { useInterstitialAd } from '../src/hooks/useInterstitialAd';
@@ -23,6 +24,7 @@ import { WeekMenu } from '../src/types';
 import { getCurrentWeekKey, nextWeekKey } from '../src/utils/weekUtils';
 
 export default function ShoppingScreen() {
+  const router = useRouter();
   const { mode, items, setMode, generate, forceGenerate, addItem, toggleItem, removeByName } = useShoppingStore();
   const { showAd } = useInterstitialAd();
 
@@ -123,9 +125,9 @@ export default function ShoppingScreen() {
           <Text style={styles.emptyDesc}>
             献立タブで来週の料理と{'\n'}材料を登録してください
           </Text>
-          <View style={styles.emptyHint}>
+          <TouchableOpacity style={styles.emptyHint} onPress={() => router.push('/')}>
             <Text style={styles.emptyHintText}>🍽️  献立タブから登録できます</Text>
-          </View>
+          </TouchableOpacity>
         </View>
       ) : (
         <ScrollView style={styles.list}>
