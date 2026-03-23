@@ -68,8 +68,9 @@ export default function MenuScreen() {
     [clearDayRecord]
   );
 
-  const currentKey = nextWeekKey(getCurrentWeekKey());
-  const isCurrentWeek = weekKey === currentKey;
+  const thisWeekKey = getCurrentWeekKey();
+  const nextKey = nextWeekKey(thisWeekKey);
+  const weekAfterNextKey = nextWeekKey(nextKey);
 
   const hasAnyEntry = weekMenu ? Object.keys(weekMenu.days).length > 0 : false;
 
@@ -114,15 +115,9 @@ export default function MenuScreen() {
           <Text style={styles.navBtnText}>‹</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          onPress={() => isCurrentWeek ? null : setWeekKey(currentKey)}
-          activeOpacity={isCurrentWeek ? 1 : 0.7}
-        >
+        <View>
           <Text style={styles.weekTitle}>{formatWeekTitle(weekKey)}</Text>
-          {!isCurrentWeek && (
-            <Text style={styles.todayHint}>来週に戻る</Text>
-          )}
-        </TouchableOpacity>
+        </View>
 
         <TouchableOpacity
           style={styles.navBtn}
@@ -144,6 +139,24 @@ export default function MenuScreen() {
           onDayDelete={handleClear}
         />
       </ScrollView>
+
+      <View style={styles.weekSelector}>
+        {[
+          { label: '今週', key: thisWeekKey },
+          { label: '来週', key: nextKey },
+          { label: '再来週', key: weekAfterNextKey },
+        ].map(({ label, key }) => (
+          <TouchableOpacity
+            key={key}
+            style={[styles.weekSelectorBtn, weekKey === key && styles.weekSelectorBtnActive]}
+            onPress={() => setWeekKey(key)}
+          >
+            <Text style={[styles.weekSelectorText, weekKey === key && styles.weekSelectorTextActive]}>
+              {label}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
 
       <DayEntrySheet
         visible={sheetVisible}
@@ -233,16 +246,39 @@ const styles = StyleSheet.create({
     color: '#333333',
     textAlign: 'center',
   },
-  todayHint: {
-    fontSize: 12,
-    color: '#E8692A',
-    textAlign: 'center',
-    marginTop: 2,
-  },
   scroll: {
     flex: 1,
   },
   scrollContent: {
     paddingVertical: 16,
+  },
+  weekSelector: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 16,
+    paddingHorizontal: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#F0F0F0',
+    backgroundColor: '#FFFFFF',
+  },
+  weekSelectorBtn: {
+    flex: 1,
+    paddingVertical: 17,
+    borderRadius: 20,
+    alignItems: 'center',
+    backgroundColor: '#F5F5F5',
+  },
+  weekSelectorBtnActive: {
+    backgroundColor: '#E8692A',
+  },
+  weekSelectorText: {
+    fontSize: 14,
+    color: '#666666',
+    fontWeight: '500',
+  },
+  weekSelectorTextActive: {
+    color: '#FFFFFF',
+    fontWeight: '700',
   },
 });

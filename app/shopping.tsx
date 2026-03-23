@@ -120,13 +120,16 @@ export default function ShoppingScreen() {
 
       {items.length === 0 ? (
         <View style={styles.empty}>
-          <Text style={styles.emptyEmoji}>🛒</Text>
+          <Ionicons name="cart-outline" size={56} color="#1C1C1E" />
           <Text style={styles.emptyTitle}>材料がありません</Text>
           <Text style={styles.emptyDesc}>
             献立タブで来週の料理と{'\n'}材料を登録してください
           </Text>
           <TouchableOpacity style={styles.emptyHint} onPress={() => router.push('/')}>
-            <Text style={styles.emptyHintText}>🍽️  献立タブから登録できます</Text>
+            <View style={styles.emptyHintRow}>
+              <Ionicons name="restaurant-outline" size={16} color="#E8692A" />
+              <Text style={styles.emptyHintText}>献立タブから登録できます</Text>
+            </View>
           </TouchableOpacity>
         </View>
       ) : (
@@ -342,6 +345,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '600',
     color: '#1C1C1E',
+    marginTop: 16,
     marginBottom: 8,
   },
   emptyDesc: {
@@ -356,6 +360,11 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingVertical: 12,
     paddingHorizontal: 16,
+  },
+  emptyHintRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
   emptyHintText: {
     fontSize: 14,
