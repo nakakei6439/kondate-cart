@@ -19,18 +19,14 @@ export async function maybeRequestReview() {
   const days = elapsed / (1000 * 60 * 60 * 24);
   if (days < DAYS_THRESHOLD) return;
 
-  if (await StoreReview.hasAction()) {
-    await StoreReview.requestReview();
-    await AsyncStorage.setItem(REVIEW_REQUESTED_KEY, '1');
-  }
+  await StoreReview.requestReview();
+  await AsyncStorage.setItem(REVIEW_REQUESTED_KEY, '1');
 }
 
 export async function requestReviewAfterPurchase() {
   const requested = await AsyncStorage.getItem(REVIEW_REQUESTED_KEY);
   if (requested) return;
 
-  if (await StoreReview.hasAction()) {
-    await StoreReview.requestReview();
-    await AsyncStorage.setItem(REVIEW_REQUESTED_KEY, '1');
-  }
+  await StoreReview.requestReview();
+  await AsyncStorage.setItem(REVIEW_REQUESTED_KEY, '1');
 }
