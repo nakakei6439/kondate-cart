@@ -2,8 +2,9 @@ import * as Haptics from 'expo-haptics';
 import React, { useRef } from 'react';
 import { Animated, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Swipeable } from 'react-native-gesture-handler';
+import { useTranslation } from 'react-i18next';
 import { DayKey, WeekMenu } from '../types';
-import { DAY_KEYS, getDayLabel, getWeekDates } from '../utils/weekUtils';
+import { DAY_KEYS, getWeekDates } from '../utils/weekUtils';
 
 interface Props {
   weekKey: string;
@@ -13,6 +14,7 @@ interface Props {
 }
 
 export default function WeekCalendar({ weekKey, weekMenu, onDayPress, onDayDelete }: Props) {
+  const { t } = useTranslation();
   const dates = getWeekDates(weekKey);
   const swipeRefs = useRef<Map<DayKey, Swipeable | null>>(new Map());
 
@@ -34,7 +36,7 @@ export default function WeekCalendar({ weekKey, weekMenu, onDayPress, onDayDelet
             onDayDelete?.(dayKey);
           }}
         >
-          <Text style={styles.deleteBtnText}>削除</Text>
+          <Text style={styles.deleteBtnText}>{t('common.delete')}</Text>
         </TouchableOpacity>
       </Animated.View>
     );
@@ -64,7 +66,7 @@ export default function WeekCalendar({ weekKey, weekMenu, onDayPress, onDayDelet
             >
               <View style={styles.dayHeader}>
                 <Text style={[styles.dayLabelText, isWeekend && styles.weekend]}>
-                  {getDayLabel(dayKey)}
+                  {t(`days.short.${dayKey}`)}
                 </Text>
                 <Text style={[styles.dateText, isWeekend && styles.weekend]}>
                   {date.getMonth() + 1}/{date.getDate()}
@@ -75,7 +77,7 @@ export default function WeekCalendar({ weekKey, weekMenu, onDayPress, onDayDelet
                 {entry ? (
                   <>
                     <Text style={styles.dishName} numberOfLines={2}>
-                      {entry.dishes.map((d) => d.dishName).filter(Boolean).join('・') || entry.note || '入力済み'}
+                      {entry.dishes.map((d) => d.dishName).filter(Boolean).join('・') || entry.note || t('entry.entered')}
                     </Text>
                     {entry.note && entry.dishes.some((d) => d.dishName) ? (
                       <Text style={styles.noteText} numberOfLines={1}>
@@ -84,7 +86,7 @@ export default function WeekCalendar({ weekKey, weekMenu, onDayPress, onDayDelet
                     ) : null}
                   </>
                 ) : (
-                  <Text style={styles.emptyText}>タップして入力</Text>
+                  <Text style={styles.emptyText}>{t('entry.tapToEnter')}</Text>
                 )}
               </View>
             </TouchableOpacity>

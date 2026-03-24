@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Alert,
   KeyboardAvoidingView,
@@ -24,6 +25,7 @@ import { WeekMenu } from '../src/types';
 import { getCurrentWeekKey, nextWeekKey } from '../src/utils/weekUtils';
 
 export default function ShoppingScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const { mode, items, setMode, generate, forceGenerate, addItem, toggleItem, removeByName } = useShoppingStore();
   const { showAd } = useInterstitialAd();
@@ -69,11 +71,11 @@ export default function ShoppingScreen() {
 
   function handleRegenerate() {
     Alert.alert(
-      'リストを再生成',
-      '献立の材料からリストを作り直します。手動で削除した項目も元に戻ります。',
+      t('shopping.regenerateTitle'),
+      t('shopping.regenerateMessage'),
       [
-        { text: 'キャンセル', style: 'cancel' },
-        { text: '再生成する', onPress: () => showAd(() => fetchAndGenerate(mode, true)) },
+        { text: t('common.cancel'), style: 'cancel' },
+        { text: t('shopping.regenerateAction'), onPress: () => showAd(() => fetchAndGenerate(mode, true)) },
       ]
     );
   }
@@ -85,7 +87,7 @@ export default function ShoppingScreen() {
     <SafeAreaView style={styles.safe}>
       {/* Large Title */}
       <View style={styles.titleArea}>
-        <Text style={styles.largeTitle}>買い物リスト</Text>
+        <Text style={styles.largeTitle}>{t('shopping.title')}</Text>
         <View style={styles.titleButtons}>
           <TouchableOpacity onPress={() => setShowSettings(true)} style={styles.settingsBtn}>
             <Ionicons name="settings-outline" size={18} color="#8E8E93" />
@@ -105,7 +107,7 @@ export default function ShoppingScreen() {
           onPress={() => setMode('nextWeek')}
         >
           <Text style={[styles.segmentText, mode === 'nextWeek' && styles.segmentTextActive]}>
-            来週
+            {t('shopping.nextWeek')}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -113,7 +115,7 @@ export default function ShoppingScreen() {
           onPress={() => setMode('twoWeeks')}
         >
           <Text style={[styles.segmentText, mode === 'twoWeeks' && styles.segmentTextActive]}>
-            再来週まで
+            {t('shopping.twoWeeks')}
           </Text>
         </TouchableOpacity>
       </View>
@@ -121,22 +123,20 @@ export default function ShoppingScreen() {
       {items.length === 0 ? (
         <View style={styles.empty}>
           <Ionicons name="cart-outline" size={56} color="#1C1C1E" />
-          <Text style={styles.emptyTitle}>材料がありません</Text>
-          <Text style={styles.emptyDesc}>
-            献立タブで来週の料理と{'\n'}材料を登録してください
-          </Text>
+          <Text style={styles.emptyTitle}>{t('shopping.emptyTitle')}</Text>
+          <Text style={styles.emptyDesc}>{t('shopping.emptyDesc')}</Text>
           <TouchableOpacity style={styles.emptyHint} onPress={() => router.push('/')}>
             <View style={styles.emptyHintRow}>
               <Ionicons name="restaurant-outline" size={16} color="#E8692A" />
-              <Text style={styles.emptyHintText}>献立タブから登録できます</Text>
+              <Text style={styles.emptyHintText}>{t('shopping.emptyHint')}</Text>
             </View>
           </TouchableOpacity>
         </View>
       ) : (
         <ScrollView style={styles.list}>
           <Text style={styles.countText}>
-            {uncheckedItems.length}品目
-            {checkedItems.length > 0 && `（購入済み ${checkedItems.length}品目）`}
+            {t('shopping.countItems', { count: uncheckedItems.length })}
+            {checkedItems.length > 0 && t('shopping.countPurchased', { count: checkedItems.length })}
           </Text>
 
           {uncheckedItems.map((item) => (
@@ -151,7 +151,7 @@ export default function ShoppingScreen() {
           {checkedItems.length > 0 && (
             <>
               <View style={styles.sectionHeader}>
-                <Text style={styles.sectionHeaderText}>購入済み</Text>
+                <Text style={styles.sectionHeaderText}>{t('shopping.purchased')}</Text>
               </View>
               {checkedItems.map((item) => (
                 <ShoppingItemComp
@@ -171,7 +171,7 @@ export default function ShoppingScreen() {
 
       <View style={styles.footer}>
         <TouchableOpacity style={styles.regenerateBtn} onPress={handleRegenerate}>
-          <Text style={styles.regenerateBtnText}>↺  再生成</Text>
+          <Text style={styles.regenerateBtnText}>{t('shopping.regenerate')}</Text>
         </TouchableOpacity>
       </View>
 
@@ -187,28 +187,28 @@ export default function ShoppingScreen() {
           <View style={styles.modalSheet}>
             <View style={styles.modalHandle} />
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>アイテムを追加</Text>
+              <Text style={styles.modalTitle}>{t('shopping.addItemTitle')}</Text>
               <TouchableOpacity onPress={() => setShowAddModal(false)} style={styles.modalCloseBtn}>
                 <Text style={styles.modalCloseBtnText}>✕</Text>
               </TouchableOpacity>
             </View>
             <View style={styles.modalBody}>
-              <Text style={styles.modalLabel}>品目名</Text>
+              <Text style={styles.modalLabel}>{t('shopping.itemName')}</Text>
               <TextInput
                 style={styles.modalInput}
                 value={newItemName}
                 onChangeText={setNewItemName}
-                placeholder="例: 醤油"
+                placeholder={t('shopping.itemNamePlaceholder')}
                 placeholderTextColor="#C7C7CC"
                 autoFocus
                 returnKeyType="next"
               />
-              <Text style={[styles.modalLabel, { marginTop: 14 }]}>量（任意）</Text>
+              <Text style={[styles.modalLabel, { marginTop: 14 }]}>{t('shopping.itemAmount')}</Text>
               <TextInput
                 style={styles.modalInput}
                 value={newItemAmount}
                 onChangeText={setNewItemAmount}
-                placeholder="例: 1本"
+                placeholder={t('shopping.itemAmountPlaceholder')}
                 placeholderTextColor="#C7C7CC"
                 returnKeyType="done"
                 onSubmitEditing={handleAddItem}
@@ -220,7 +220,7 @@ export default function ShoppingScreen() {
                 onPress={handleAddItem}
                 disabled={!newItemName.trim()}
               >
-                <Text style={styles.modalAddBtnText}>追加</Text>
+                <Text style={styles.modalAddBtnText}>{t('shopping.add')}</Text>
               </TouchableOpacity>
             </View>
           </View>

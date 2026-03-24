@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Alert,
   Animated,
@@ -16,6 +17,7 @@ import DishEditSheet from '../src/components/DishEditSheet';
 import { SettingsModal } from '../src/components/SettingsModal';
 import { useDishStore } from '../src/store/dishStore';
 import { DishRecord, Ingredient } from '../src/types';
+import { TimeLabelKey } from '../src/utils/weekUtils';
 
 function formatDate(isoString: string): string {
   const d = new Date(isoString);
@@ -28,24 +30,24 @@ function daysSince(isoString: string): number {
   return Math.floor((now.getTime() - then.getTime()) / (1000 * 60 * 60 * 24));
 }
 
-function getTimeLabel(isoString: string): string {
+function getTimeLabelKey(isoString: string): TimeLabelKey {
   const diff = daysSince(isoString);
-  if (diff < 7) return '今週';
-  if (diff < 14) return '先週';
-  if (diff < 30) return '今月';
-  return 'それ以前';
+  if (diff < 7) return 'thisWeek';
+  if (diff < 14) return 'lastWeek';
+  if (diff < 30) return 'thisMonth';
+  return 'earlier';
 }
 
-function groupToSections(dishes: DishRecord[]): { title: string; data: DishRecord[] }[] {
-  const order = ['今週', '先週', '今月', 'それ以前'];
-  const map = new Map<string, DishRecord[]>();
+function groupToSections(dishes: DishRecord[]): { title: TimeLabelKey; data: DishRecord[] }[] {
+  const order: TimeLabelKey[] = ['thisWeek', 'lastWeek', 'thisMonth', 'earlier'];
+  const map = new Map<TimeLabelKey, DishRecord[]>();
   for (const dish of dishes) {
-    const label = getTimeLabel(dish.updatedAt);
-    const arr = map.get(label) ?? [];
+    const key = getTimeLabelKey(dish.updatedAt);
+    const arr = map.get(key) ?? [];
     arr.push(dish);
-    map.set(label, arr);
+    map.set(key, arr);
   }
-  return order.filter((t) => map.has(t)).map((title) => ({ title, data: map.get(title)! }));
+  return order.filter((k) => map.has(k)).map((title) => ({ title, data: map.get(title)! }));
 }
 
 function DishRow({
@@ -57,6 +59,7 @@ function DishRow({
   onPress: () => void;
   onDelete: () => void;
 }) {
+  const { t } = useTranslation();
   const swipeRef = useRef<Swipeable>(null);
 
   function renderRightActions(progress: Animated.AnimatedInterpolation<number>) {
@@ -71,13 +74,13 @@ function DishRow({
           style={styles.deleteBtn}
           onPress={() => {
             swipeRef.current?.close();
-            Alert.alert('削除確認', `「${dish.name}」を履歴から削除しますか？`, [
-              { text: 'キャンセル', style: 'cancel' },
-              { text: '削除', style: 'destructive', onPress: onDelete },
+            Alert.alert(t('history.deleteConfirmTitle'), t('history.deleteConfirmMessage', { name: dish.name }), [
+              { text: t('common.cancel'), style: 'cancel' },
+              { text: t('common.delete'), style: 'destructive', onPress: onDelete },
             ]);
           }}
         >
-          <Text style={styles.deleteBtnText}>削除</Text>
+          <Text style={styles.deleteBtnText}>{t('common.delete')}</Text>
         </TouchableOpacity>
       </Animated.View>
     );
@@ -97,7 +100,7 @@ function DishRow({
                 {dish.ingredients.map((i) => i.name).filter(Boolean).join('、')}
               </Text>
             ) : (
-              <Text style={styles.noIngredients}>材料未登録</Text>
+              <Text style={styles.noIngredients}>{t('history.noIngredients')}</Text>
             )}
           </View>
           <Text style={styles.editHint}>›</Text>
@@ -108,6 +111,7 @@ function DishRow({
 }
 
 export default function HistoryScreen() {
+  const { t } = useTranslation();
   const { dishes, initialized, loadDishes, updateDish, deleteDish } = useDishStore();
   const [selectedDish, setSelectedDish] = useState<DishRecord | null>(null);
   const [sheetVisible, setSheetVisible] = useState(false);
@@ -141,7 +145,7 @@ export default function HistoryScreen() {
     <SafeAreaView style={styles.safe}>
       {/* Large Title */}
       <View style={styles.titleArea}>
-        <Text style={styles.largeTitle}>料理の履歴</Text>
+        <Text style={styles.largeTitle}>{t('history.title')}</Text>
         <TouchableOpacity onPress={() => setSettingsVisible(true)} style={styles.settingsBtn}>
           <Ionicons name="settings-outline" size={24} color="#8E8E93" />
         </TouchableOpacity>
@@ -154,7 +158,7 @@ export default function HistoryScreen() {
           style={styles.searchInput}
           value={query}
           onChangeText={setQuery}
-          placeholder="料理名で検索..."
+          placeholder={t('history.searchPlaceholder')}
           placeholderTextColor="#C7C7CC"
           clearButtonMode="while-editing"
           returnKeyType="search"
@@ -164,22 +168,20 @@ export default function HistoryScreen() {
       {dishes.length === 0 ? (
         <View style={styles.empty}>
           <Ionicons name="document-text-outline" size={56} color="#1C1C1E" />
-          <Text style={styles.emptyTitle}>料理履歴がありません</Text>
-          <Text style={styles.emptyDesc}>
-            献立タブで料理を登録すると{'\n'}ここに履歴が表示されます
-          </Text>
+          <Text style={styles.emptyTitle}>{t('history.emptyTitle')}</Text>
+          <Text style={styles.emptyDesc}>{t('history.emptyDesc')}</Text>
           <View style={styles.emptyHint}>
             <View style={styles.emptyHintRow}>
               <Ionicons name="restaurant-outline" size={16} color="#E8692A" />
-              <Text style={styles.emptyHintText}>献立タブから登録できます</Text>
+              <Text style={styles.emptyHintText}>{t('history.emptyHint')}</Text>
             </View>
           </View>
         </View>
       ) : filtered.length === 0 ? (
         <View style={styles.empty}>
           <Ionicons name="search-outline" size={56} color="#1C1C1E" />
-          <Text style={styles.emptyTitle}>見つかりません</Text>
-          <Text style={styles.emptyDesc}>「{query}」に一致する料理がありません</Text>
+          <Text style={styles.emptyTitle}>{t('history.notFoundTitle')}</Text>
+          <Text style={styles.emptyDesc}>{t('history.notFoundDesc', { query })}</Text>
         </View>
       ) : (
         <SectionList
@@ -195,7 +197,7 @@ export default function HistoryScreen() {
           )}
           renderSectionHeader={({ section }) => (
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionHeaderText}>{section.title}</Text>
+              <Text style={styles.sectionHeaderText}>{t(`timeLabel.${section.title}`)}</Text>
             </View>
           )}
           stickySectionHeadersEnabled

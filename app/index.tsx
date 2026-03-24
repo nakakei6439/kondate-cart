@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Alert,
   SafeAreaView,
@@ -23,6 +24,7 @@ import {
 } from '../src/utils/weekUtils';
 
 export default function MenuScreen() {
+  const { t } = useTranslation();
   const { weekKey, weekMenu, setWeekKey, loadWeekMenu, saveDayRecord, clearDayRecord, clearWeekMenu } =
     useMenuStore();
   const { dishes, initialized, loadDishes, upsertDish } = useDishStore();
@@ -75,10 +77,10 @@ export default function MenuScreen() {
   const hasAnyEntry = weekMenu ? Object.keys(weekMenu.days).length > 0 : false;
 
   function handleClearWeek() {
-    Alert.alert('献立を全削除', 'この週の献立を全て削除しますか？', [
-      { text: 'キャンセル', style: 'cancel' },
+    Alert.alert(t('menu.clearWeekTitle'), t('menu.clearWeekMessage'), [
+      { text: t('common.cancel'), style: 'cancel' },
       {
-        text: '削除',
+        text: t('common.delete'),
         style: 'destructive',
         onPress: () => clearWeekMenu(),
       },
@@ -91,8 +93,8 @@ export default function MenuScreen() {
       <View style={styles.titleArea}>
         <View style={styles.titleSpacer} />
         <View style={styles.titleCenter}>
-          <Text style={styles.appTitle}>献立カート</Text>
-          <Text style={styles.appSubtitle}>週の献立を計画しよう</Text>
+          <Text style={styles.appTitle}>{t('menu.title')}</Text>
+          <Text style={styles.appSubtitle}>{t('menu.subtitle')}</Text>
         </View>
         <View style={styles.titleRight}>
           <TouchableOpacity onPress={() => setSettingsVisible(true)} style={styles.settingsBtn}>
@@ -142,9 +144,9 @@ export default function MenuScreen() {
 
       <View style={styles.weekSelector}>
         {[
-          { label: '今週', key: thisWeekKey },
-          { label: '来週', key: nextKey },
-          { label: '再来週', key: weekAfterNextKey },
+          { label: t('menu.thisWeek'), key: thisWeekKey },
+          { label: t('menu.nextWeek'), key: nextKey },
+          { label: t('menu.weekAfterNext'), key: weekAfterNextKey },
         ].map(({ label, key }) => (
           <TouchableOpacity
             key={key}

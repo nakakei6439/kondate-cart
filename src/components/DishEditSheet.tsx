@@ -1,5 +1,6 @@
 import * as Haptics from 'expo-haptics';
 import React, { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Alert,
   Animated,
@@ -26,6 +27,7 @@ interface Props {
 }
 
 export default function DishEditSheet({ visible, dish, onSave, onDelete, onClose }: Props) {
+  const { t } = useTranslation();
   const slideAnim = useRef(new Animated.Value(600)).current;
   const isDirty = useRef(false);
 
@@ -91,10 +93,10 @@ export default function DishEditSheet({ visible, dish, onSave, onDelete, onClose
 
   function handleDelete() {
     if (!dish) return;
-    Alert.alert('削除確認', `「${dish.name}」を履歴から削除しますか？`, [
-      { text: 'キャンセル', style: 'cancel' },
+    Alert.alert(t('dishEdit.deleteConfirmTitle'), t('dishEdit.deleteConfirmMessage', { name: dish.name }), [
+      { text: t('common.cancel'), style: 'cancel' },
       {
-        text: '削除',
+        text: t('common.delete'),
         style: 'destructive',
         onPress: () => {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -107,17 +109,17 @@ export default function DishEditSheet({ visible, dish, onSave, onDelete, onClose
 
   function handleClose() {
     if (isDirty.current) {
-      Alert.alert('保存しますか？', '変更内容が保存されていません。', [
-        { text: 'キャンセル', style: 'cancel' },
+      Alert.alert(t('common.unsavedChanges'), t('common.unsavedChangesMessageEdit'), [
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: '保存しない',
+          text: t('common.discard'),
           style: 'destructive',
           onPress: () => {
             isDirty.current = false;
             onClose();
           },
         },
-        { text: '保存する', onPress: handleSave },
+        { text: t('common.saveConfirm'), onPress: handleSave },
       ]);
     } else {
       onClose();
@@ -140,7 +142,7 @@ export default function DishEditSheet({ visible, dish, onSave, onDelete, onClose
           <View style={styles.handle} />
 
           <View style={styles.header}>
-            <Text style={styles.headerTitle}>料理を編集</Text>
+            <Text style={styles.headerTitle}>{t('dishEdit.title')}</Text>
             <TouchableOpacity onPress={handleClose} style={styles.closeBtn}>
               <Text style={styles.closeBtnText}>✕</Text>
             </TouchableOpacity>
@@ -148,18 +150,18 @@ export default function DishEditSheet({ visible, dish, onSave, onDelete, onClose
 
           <ScrollView style={styles.body} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
             {/* 料理名 */}
-            <Text style={styles.label}>料理名</Text>
+            <Text style={styles.label}>{t('dishEdit.dishName')}</Text>
             <TextInput
               style={styles.nameInput}
               value={name}
-              onChangeText={(t) => { setName(t); markDirty(); }}
-              placeholder="料理名"
+              onChangeText={(v) => { setName(v); markDirty(); }}
+              placeholder={t('dishEdit.dishNamePlaceholder')}
               placeholderTextColor="#C7C7CC"
               returnKeyType="done"
             />
 
             {/* 材料（グループ化スタイル） */}
-            <Text style={[styles.label, { marginTop: 16 }]}>材料</Text>
+            <Text style={[styles.label, { marginTop: 16 }]}>{t('dishEdit.ingredients')}</Text>
             <View style={styles.ingredientGroup}>
               {ingredients.map((ing, index) => {
                 const isFirst = index === 0;
@@ -184,7 +186,7 @@ export default function DishEditSheet({ visible, dish, onSave, onDelete, onClose
                             removeIngredient(index);
                           }}
                         >
-                          <Text style={styles.swipeDeleteText}>削除</Text>
+                          <Text style={styles.swipeDeleteText}>{t('common.delete')}</Text>
                         </TouchableOpacity>
                       )}
                       overshootRight={false}
@@ -193,8 +195,8 @@ export default function DishEditSheet({ visible, dish, onSave, onDelete, onClose
                         <TextInput
                           style={styles.ingredientNameInput}
                           value={ing.name}
-                          onChangeText={(t) => updateIngredient(index, 'name', t)}
-                          placeholder="食材名"
+                          onChangeText={(v) => updateIngredient(index, 'name', v)}
+                          placeholder={t('dishEdit.ingredientNamePlaceholder')}
                           placeholderTextColor="#C7C7CC"
                           returnKeyType="next"
                         />
@@ -202,8 +204,8 @@ export default function DishEditSheet({ visible, dish, onSave, onDelete, onClose
                         <TextInput
                           style={styles.ingredientAmountInput}
                           value={ing.amount}
-                          onChangeText={(t) => updateIngredient(index, 'amount', t)}
-                          placeholder="量"
+                          onChangeText={(v) => updateIngredient(index, 'amount', v)}
+                          placeholder={t('dishEdit.ingredientAmountPlaceholder')}
                           placeholderTextColor="#C7C7CC"
                           returnKeyType="done"
                         />
@@ -218,7 +220,7 @@ export default function DishEditSheet({ visible, dish, onSave, onDelete, onClose
             </View>
 
             <TouchableOpacity style={styles.addIngredientBtn} onPress={addIngredient}>
-              <Text style={styles.addIngredientText}>＋ 材料を追加</Text>
+              <Text style={styles.addIngredientText}>{t('dishEdit.addIngredient')}</Text>
             </TouchableOpacity>
 
             <View style={{ height: 24 }} />
@@ -226,7 +228,7 @@ export default function DishEditSheet({ visible, dish, onSave, onDelete, onClose
 
           <View style={styles.footer}>
             <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
-              <Text style={styles.saveBtnText}>保存</Text>
+              <Text style={styles.saveBtnText}>{t('common.save')}</Text>
             </TouchableOpacity>
           </View>
         </Animated.View>

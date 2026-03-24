@@ -2,6 +2,7 @@ import * as Haptics from 'expo-haptics';
 import React, { useEffect, useRef } from 'react';
 import { Animated, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Swipeable } from 'react-native-gesture-handler';
+import { useTranslation } from 'react-i18next';
 import { ShoppingItem as ShoppingItemType } from '../types';
 
 interface Props {
@@ -11,6 +12,7 @@ interface Props {
 }
 
 export default function ShoppingItem({ item, onToggle, onRemove }: Props) {
+  const { t } = useTranslation();
   const swipeRef = useRef<Swipeable>(null);
   const scaleAnim = useRef(new Animated.Value(item.checked ? 1 : 0)).current;
 
@@ -43,7 +45,7 @@ export default function ShoppingItem({ item, onToggle, onRemove }: Props) {
             onRemove();
           }}
         >
-          <Text style={styles.deleteBtnText}>削除</Text>
+          <Text style={styles.deleteBtnText}>{t('common.delete')}</Text>
         </TouchableOpacity>
       </Animated.View>
     );

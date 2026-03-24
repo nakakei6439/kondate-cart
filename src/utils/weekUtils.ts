@@ -2,15 +2,7 @@ import { DayKey } from '../types';
 
 export const DAY_KEYS: DayKey[] = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
-const DAY_LABELS_JA: Record<DayKey, string> = {
-  Mon: '月',
-  Tue: '火',
-  Wed: '水',
-  Thu: '木',
-  Fri: '金',
-  Sat: '土',
-  Sun: '日',
-};
+export type TimeLabelKey = 'thisWeek' | 'lastWeek' | 'thisMonth' | 'earlier';
 
 /** ISO 8601 週番号を返す "2026-W09" 形式 */
 export function getWeekKey(date: Date): string {
@@ -45,16 +37,9 @@ export function getWeekDates(weekKey: string): Date[] {
   });
 }
 
-/** "2/23(月)" 形式のラベル */
+/** "2/23" 形式のラベル */
 export function formatDayLabel(date: Date): string {
-  const dayKey = getDayKeyFromDate(date);
-  const label = DAY_LABELS_JA[dayKey];
-  return `${date.getMonth() + 1}/${date.getDate()}(${label})`;
-}
-
-/** "月" などの曜日ラベルのみ */
-export function getDayLabel(dayKey: DayKey): string {
-  return DAY_LABELS_JA[dayKey];
+  return `${date.getMonth() + 1}/${date.getDate()}`;
 }
 
 /** Date → DayKey */

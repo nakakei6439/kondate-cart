@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import React, { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Alert,
   KeyboardAvoidingView,
@@ -16,7 +17,6 @@ import {
 } from 'react-native';
 import { Swipeable } from 'react-native-gesture-handler';
 import { DayKey, DayRecord, DishEntry, DishRecord } from '../types';
-import { getDayLabel } from '../utils/weekUtils';
 
 interface Props {
   visible: boolean;
@@ -39,6 +39,7 @@ export default function DayEntrySheet({
   onClear,
   onClose,
 }: Props) {
+  const { t } = useTranslation();
   const isDirty = useRef(false);
   const scrollRef = useRef<React.ElementRef<typeof ScrollView>>(null);
   const prevDishCountRef = useRef(1);
@@ -191,10 +192,10 @@ export default function DayEntrySheet({
 
   function handleClear() {
     if (!dayKey) return;
-    Alert.alert('削除確認', 'この日の献立を削除しますか？', [
-      { text: 'キャンセル', style: 'cancel' },
+    Alert.alert(t('entry.clearDayTitle'), t('entry.clearDayMessage'), [
+      { text: t('common.cancel'), style: 'cancel' },
       {
-        text: '削除',
+        text: t('common.delete'),
         style: 'destructive',
         onPress: () => {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -207,17 +208,17 @@ export default function DayEntrySheet({
 
   function handleClose() {
     if (isDirty.current) {
-      Alert.alert('保存しますか？', '入力内容が保存されていません。', [
-        { text: 'キャンセル', style: 'cancel' },
+      Alert.alert(t('common.unsavedChanges'), t('common.unsavedChangesMessage'), [
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: '保存しない',
+          text: t('common.discard'),
           style: 'destructive',
           onPress: () => {
             isDirty.current = false;
             onClose();
           },
         },
-        { text: '保存する', onPress: handleSave },
+        { text: t('common.saveConfirm'), onPress: handleSave },
       ]);
     } else {
       onClose();
@@ -233,10 +234,10 @@ export default function DayEntrySheet({
         >
           <View style={styles.header}>
             <TouchableOpacity onPress={handleClose} style={styles.backBtn}>
-              <Text style={styles.backBtnText}>‹ 戻る</Text>
+              <Text style={styles.backBtnText}>{t('entry.back')}</Text>
             </TouchableOpacity>
             <Text style={styles.headerTitle}>
-              {dayKey ? getDayLabel(dayKey) + '曜日の献立' : ''}
+              {dayKey ? t('entry.headerTitle', { day: t(`days.full.${dayKey}`) }) : ''}
             </Text>
             <TouchableOpacity onPress={addDish} style={styles.addDishIconBtn}>
               <Ionicons name="add-circle-outline" size={26} color="#E8692A" />
@@ -253,15 +254,15 @@ export default function DayEntrySheet({
               return (
                 <View key={dishIdx}>
                   {/* Dish section header */}
-                  <Text style={styles.label}>料理 {dishIdx + 1}</Text>
+                  <Text style={styles.label}>{t('entry.dish', { number: dishIdx + 1 })}</Text>
 
                   {/* Dish name */}
                   <View style={styles.dishNameRow}>
                     <TextInput
                       style={styles.dishNameInput}
                       value={dish.dishName}
-                      onChangeText={(t) => updateDishName(dishIdx, t)}
-                      placeholder="例: 肉じゃが"
+                      onChangeText={(v) => updateDishName(dishIdx, v)}
+                      placeholder={t('entry.dishPlaceholder')}
                       placeholderTextColor="#C7C7CC"
                       returnKeyType="done"
                     />
@@ -269,7 +270,7 @@ export default function DayEntrySheet({
                       style={styles.historyBtn}
                       onPress={() => toggleHistory(dishIdx)}
                     >
-                      <Text style={styles.historyBtnText}>履歴</Text>
+                      <Text style={styles.historyBtnText}>{t('entry.historyBtn')}</Text>
                     </TouchableOpacity>
                     {dayDishes.length > 1 && (
                       <TouchableOpacity
@@ -303,7 +304,7 @@ export default function DayEntrySheet({
                   )}
 
                   {/* Ingredients */}
-                  <Text style={[styles.label, { marginTop: 16 }]}>材料</Text>
+                  <Text style={[styles.label, { marginTop: 16 }]}>{t('entry.ingredients')}</Text>
                   <View style={styles.ingredientGroup}>
                     {dish.ingredients.map((ing, ingIdx) => {
                       const isFirst = ingIdx === 0;
@@ -328,7 +329,7 @@ export default function DayEntrySheet({
                                   removeIngredient(dishIdx, ingIdx);
                                 }}
                               >
-                                <Text style={styles.swipeDeleteText}>削除</Text>
+                                <Text style={styles.swipeDeleteText}>{t('common.delete')}</Text>
                               </TouchableOpacity>
                             )}
                             overshootRight={false}
@@ -337,8 +338,8 @@ export default function DayEntrySheet({
                               <TextInput
                                 style={styles.ingredientNameInput}
                                 value={ing.name}
-                                onChangeText={(t) => updateIngredient(dishIdx, ingIdx, 'name', t)}
-                                placeholder="食材名"
+                                onChangeText={(v) => updateIngredient(dishIdx, ingIdx, 'name', v)}
+                                placeholder={t('entry.ingredientNamePlaceholder')}
                                 placeholderTextColor="#C7C7CC"
                                 returnKeyType="next"
                               />
@@ -346,8 +347,8 @@ export default function DayEntrySheet({
                               <TextInput
                                 style={styles.ingredientAmountInput}
                                 value={ing.amount}
-                                onChangeText={(t) => updateIngredient(dishIdx, ingIdx, 'amount', t)}
-                                placeholder="量"
+                                onChangeText={(v) => updateIngredient(dishIdx, ingIdx, 'amount', v)}
+                                placeholder={t('entry.ingredientAmountPlaceholder')}
                                 placeholderTextColor="#C7C7CC"
                                 returnKeyType="done"
                               />
@@ -362,7 +363,7 @@ export default function DayEntrySheet({
                   </View>
 
                   <TouchableOpacity style={styles.addIngredientBtn} onPress={() => addIngredient(dishIdx)}>
-                    <Text style={styles.addIngredientText}>＋ 材料を追加</Text>
+                    <Text style={styles.addIngredientText}>{t('entry.addIngredient')}</Text>
                   </TouchableOpacity>
 
                   {/* Divider between dishes */}
@@ -372,12 +373,12 @@ export default function DayEntrySheet({
             })}
 
             {/* Note */}
-            <Text style={[styles.label, { marginTop: 8 }]}>メモ</Text>
+            <Text style={[styles.label, { marginTop: 8 }]}>{t('entry.note')}</Text>
             <TextInput
               style={styles.noteInput}
               value={note}
-              onChangeText={(t) => { setNote(t); markDirty(); }}
-              placeholder="例: 外食、残り物など"
+              onChangeText={(v) => { setNote(v); markDirty(); }}
+              placeholder={t('entry.notePlaceholder')}
               placeholderTextColor="#C7C7CC"
               returnKeyType="done"
             />
@@ -387,7 +388,7 @@ export default function DayEntrySheet({
 
           <View style={styles.footer}>
             <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
-              <Text style={styles.saveBtnText}>保存</Text>
+              <Text style={styles.saveBtnText}>{t('common.save')}</Text>
             </TouchableOpacity>
           </View>
         </KeyboardAvoidingView>
