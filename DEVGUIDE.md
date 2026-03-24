@@ -13,7 +13,7 @@
 | Expo SDK | 54 |
 | React Native | 0.81.5 |
 | Version | 1.0.1 / Build 10 |
-| Apple Team ID | 5Z6T9SM259 |
+| Apple Team ID | 7PTQ6W4R3T |
 | EAS Project ID | `09de0c14-0ba0-48e3-b88e-75ba1a52a4c4` |
 
 ---
