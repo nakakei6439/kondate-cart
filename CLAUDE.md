@@ -44,8 +44,7 @@ COMMANDS.md                      ← 一覧への追記（必須）
 - [REQUIREMENTS.md](REQUIREMENTS.md) — 要件定義・データモデル・機能仕様
 - [DEVGUIDE.md](DEVGUIDE.md) — 環境構築・開発フロー・設定値
 - [COMMANDS.md](COMMANDS.md) — Claude Code スラッシュコマンド一覧
-- [decisions.md](decisions.md) — 意思決定ログ
-- [BUSINESS_PLAN.md](BUSINESS_PLAN.md) — 事業計画書（収益目標・ロードマップ）
+- [decisions.md](decisions.md) — 意思決定ログ（非公開）
 
 ## 新しいアプリをリリースするときのチェックリスト
 
