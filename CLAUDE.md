@@ -46,6 +46,7 @@ COMMANDS.md                      ← 一覧への追記（必須）
 - [COMMANDS.md](COMMANDS.md) — Claude Code スラッシュコマンド一覧
 - [decisions.md](decisions.md) — 意思決定ログ
 - [BUSINESS_PLAN.md](BUSINESS_PLAN.md) — 事業計画書（収益目標・ロードマップ）
+- [DOWNLOAD_GROWTH_PLAN.md](DOWNLOAD_GROWTH_PLAN.md) — ダウンロード数増加プラン（ASO・SNS・コミュニティ施策）
 
 ## 新しいアプリをリリースするときのチェックリスト
 
