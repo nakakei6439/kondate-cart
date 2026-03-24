@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Purchases, { LOG_LEVEL } from 'react-native-purchases';
 import { create } from 'zustand';
+import { requestReviewAfterPurchase } from '../hooks/useReviewPrompt';
 
 const REVENUECAT_API_KEY = 'appl_uRhiHIrhrxguepSKJBEQHTQAlvX';
 const ENTITLEMENT_ID = 'Kondate Cart Premium';
@@ -64,6 +65,7 @@ export const usePurchaseStore = create<PurchaseState>((set) => ({
       const isPremium = customerInfo.entitlements.active[ENTITLEMENT_ID] !== undefined;
       await AsyncStorage.setItem(PREMIUM_STORAGE_KEY, isPremium ? 'true' : 'false');
       set({ isPremium, isLoading: false });
+      if (isPremium) requestReviewAfterPurchase();
       return { success: true };
     } catch (e: unknown) {
       const err = e as Record<string, unknown>;

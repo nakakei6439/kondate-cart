@@ -7,6 +7,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import MobileAds, { AdsConsent, AdsConsentStatus } from 'react-native-google-mobile-ads';
 import { requestTrackingPermissionsAsync } from 'expo-tracking-transparency';
 import { usePurchaseStore } from '../src/store/purchaseStore';
+import { maybeRequestReview } from '../src/hooks/useReviewPrompt';
 
 export default function Layout() {
   const initPurchases = usePurchaseStore((s) => s.initPurchases);
@@ -19,6 +20,7 @@ export default function Layout() {
 
       // RevenueCat は広告初期化とは独立して即座に初期化する
       initPurchases();
+      maybeRequestReview();
 
       // iOS 17+ では UIWindow が完全にアクティブになる前に ATT を呼ぶとダイアログが無視される。
       // AppState が active になった後 300ms 待機することで表示を確実にする。
