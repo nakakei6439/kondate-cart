@@ -15,7 +15,7 @@ import {
   TouchableWithoutFeedback,
   View,
 } from 'react-native';
-import { Swipeable } from 'react-native-gesture-handler';
+import { GestureHandlerRootView, Swipeable } from 'react-native-gesture-handler';
 import { DishRecord, Ingredient } from '../types';
 
 interface Props {
@@ -130,6 +130,7 @@ export default function DishEditSheet({ visible, dish, onSave, onDelete, onClose
 
   return (
     <Modal transparent animationType="none" visible={visible} onRequestClose={handleClose}>
+      <GestureHandlerRootView style={{ flex: 1 }}>
       <TouchableWithoutFeedback onPress={handleClose}>
         <View style={styles.overlay} />
       </TouchableWithoutFeedback>
@@ -233,6 +234,7 @@ export default function DishEditSheet({ visible, dish, onSave, onDelete, onClose
           </View>
         </Animated.View>
       </KeyboardAvoidingView>
+      </GestureHandlerRootView>
     </Modal>
   );
 }

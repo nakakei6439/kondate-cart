@@ -1,6 +1,6 @@
 import * as Haptics from 'expo-haptics';
 import React, { useRef } from 'react';
-import { Animated, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { Animated, View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Swipeable } from 'react-native-gesture-handler';
 import { useTranslation } from 'react-i18next';
 import { DayKey, WeekMenu } from '../types';

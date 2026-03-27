@@ -15,7 +15,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { Swipeable } from 'react-native-gesture-handler';
+import { GestureHandlerRootView, Swipeable } from 'react-native-gesture-handler';
 import { DayKey, DayRecord, DishEntry, DishRecord } from '../types';
 
 interface Props {
@@ -227,6 +227,7 @@ export default function DayEntrySheet({
 
   return (
     <Modal transparent={false} animationType="slide" visible={visible} onRequestClose={handleClose}>
+      <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaView style={styles.safeArea}>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -393,6 +394,7 @@ export default function DayEntrySheet({
           </View>
         </KeyboardAvoidingView>
       </SafeAreaView>
+      </GestureHandlerRootView>
     </Modal>
   );
 }

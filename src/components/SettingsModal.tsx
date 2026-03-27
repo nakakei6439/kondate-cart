@@ -24,7 +24,7 @@ interface Props {
 }
 
 export function SettingsModal({ visible, onClose }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { isPremium, isLoading, offeringPrice, purchasePremium, restorePurchases, resetPremium } = usePurchaseStore();
   const { weekKey, loadWeekMenu } = useMenuStore();
   const { loadDishes } = useDishStore();
@@ -146,7 +146,7 @@ export function SettingsModal({ visible, onClose }: Props) {
             <TouchableOpacity
               style={[styles.devBtn, { marginTop: 8 }]}
               onPress={async () => {
-                await seedDummyData();
+                await seedDummyData(i18n.language);
                 await Promise.all([loadWeekMenu(weekKey), loadDishes()]);
                 Alert.alert(t('settings.dummySuccessTitle'), t('settings.dummySuccessMessage'));
               }}
