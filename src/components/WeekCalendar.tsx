@@ -17,6 +17,7 @@ export default function WeekCalendar({ weekKey, weekMenu, onDayPress, onDayDelet
   const { t } = useTranslation();
   const dates = getWeekDates(weekKey);
   const swipeRefs = useRef<Map<DayKey, Swipeable | null>>(new Map());
+  const swipeActiveRef = useRef<Map<DayKey, boolean>>(new Map());
 
   function renderRightActions(
     progress: Animated.AnimatedInterpolation<number>,
@@ -57,11 +58,19 @@ export default function WeekCalendar({ weekKey, weekMenu, onDayPress, onDayDelet
             enabled={!!entry && !!onDayDelete}
             friction={2}
             overshootRight={false}
+            onSwipeableWillOpen={() => { swipeActiveRef.current.set(dayKey, true); }}
+            onSwipeableClose={() => { swipeActiveRef.current.set(dayKey, false); }}
           >
           <View style={styles.dayCell}>
             <TouchableOpacity
               style={styles.dayCellPressable}
-              onPress={() => onDayPress(dayKey)}
+              onPress={() => {
+                if (swipeActiveRef.current.get(dayKey)) {
+                  swipeRefs.current.get(dayKey)?.close();
+                  return;
+                }
+                onDayPress(dayKey);
+              }}
               activeOpacity={0.7}
             >
               <View style={styles.dayHeader}>

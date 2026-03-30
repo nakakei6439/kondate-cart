@@ -125,6 +125,7 @@
     "import": "Import Data (Overwrite)",
     "otherSection": "Other",
     "privacyPolicy": "Privacy Policy",
+    "version": "Version",
     "exportErrorTitle": "Export Error",
     "exportErrorDefault": "Export failed",
     "importConfirmTitle": "Import Data",

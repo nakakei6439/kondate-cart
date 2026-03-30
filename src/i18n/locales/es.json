@@ -125,6 +125,7 @@
     "import": "Importar datos (Sobreescribir)",
     "otherSection": "Otros",
     "privacyPolicy": "Política de privacidad",
+    "version": "Versión",
     "exportErrorTitle": "Error de exportación",
     "exportErrorDefault": "Error al exportar",
     "importConfirmTitle": "Importar datos",

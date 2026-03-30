@@ -30,6 +30,7 @@ export default function DishEditSheet({ visible, dish, onSave, onDelete, onClose
   const { t } = useTranslation();
   const slideAnim = useRef(new Animated.Value(600)).current;
   const isDirty = useRef(false);
+  const swipeRefs = useRef<(Swipeable | null)[]>([]);
 
   const [name, setName] = useState('');
   const [ingredients, setIngredients] = useState<Ingredient[]>([{ name: '', amount: '' }]);
@@ -130,14 +131,15 @@ export default function DishEditSheet({ visible, dish, onSave, onDelete, onClose
 
   return (
     <Modal transparent animationType="none" visible={visible} onRequestClose={handleClose}>
-      <GestureHandlerRootView style={{ flex: 1 }}>
+      <View style={{ flex: 1 }}>
       <TouchableWithoutFeedback onPress={handleClose}>
         <View style={styles.overlay} />
       </TouchableWithoutFeedback>
 
+      <GestureHandlerRootView style={styles.kavContainer}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.kavContainer}
+        style={{ flex: 1 }}
       >
         <Animated.View style={[styles.sheet, { transform: [{ translateY: slideAnim }] }]}>
           <View style={styles.handle} />
@@ -176,6 +178,7 @@ export default function DishEditSheet({ visible, dish, onSave, onDelete, onClose
                 return (
                   <View key={index}>
                     <Swipeable
+                      ref={(ref) => { swipeRefs.current[index] = ref; }}
                       renderRightActions={() => (
                         <TouchableOpacity
                           style={[styles.swipeDeleteBtn, {
@@ -183,6 +186,7 @@ export default function DishEditSheet({ visible, dish, onSave, onDelete, onClose
                             borderBottomRightRadius: isLast ? 12 : 0,
                           }]}
                           onPress={() => {
+                            swipeRefs.current[index]?.close();
                             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                             removeIngredient(index);
                           }}
@@ -190,6 +194,7 @@ export default function DishEditSheet({ visible, dish, onSave, onDelete, onClose
                           <Text style={styles.swipeDeleteText}>{t('common.delete')}</Text>
                         </TouchableOpacity>
                       )}
+                      friction={2}
                       overshootRight={false}
                     >
                       <View style={[styles.ingredientRow, rowRadius]}>
@@ -228,6 +233,9 @@ export default function DishEditSheet({ visible, dish, onSave, onDelete, onClose
           </ScrollView>
 
           <View style={styles.footer}>
+            <TouchableOpacity style={styles.deleteBtn} onPress={handleDelete}>
+              <Text style={styles.deleteBtnText}>{t('common.delete')}</Text>
+            </TouchableOpacity>
             <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
               <Text style={styles.saveBtnText}>{t('common.save')}</Text>
             </TouchableOpacity>
@@ -235,6 +243,7 @@ export default function DishEditSheet({ visible, dish, onSave, onDelete, onClose
         </Animated.View>
       </KeyboardAvoidingView>
       </GestureHandlerRootView>
+      </View>
     </Modal>
   );
 }
@@ -378,4 +387,18 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   saveBtnText: { fontSize: 16, color: '#FFFFFF', fontWeight: '700' },
+  deleteBtn: {
+    height: 50,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#FF3B30',
+  },
+  deleteBtnText: {
+    fontSize: 15,
+    color: '#FF3B30',
+    fontWeight: '600',
+  },
 });
