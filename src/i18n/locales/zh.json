@@ -125,6 +125,7 @@
     "import": "导入数据（覆盖）",
     "otherSection": "其他",
     "privacyPolicy": "隐私政策",
+    "version": "版本",
     "exportErrorTitle": "导出错误",
     "exportErrorDefault": "导出失败",
     "importConfirmTitle": "导入数据",

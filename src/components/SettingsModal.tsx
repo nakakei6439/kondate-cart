@@ -11,6 +11,7 @@ import {
   TouchableWithoutFeedback,
   View,
 } from 'react-native';
+import Constants from 'expo-constants';
 import { usePurchaseStore } from '../store/purchaseStore';
 import { useMenuStore } from '../store/menuStore';
 import { useDishStore } from '../store/dishStore';
@@ -22,6 +23,9 @@ interface Props {
   visible: boolean;
   onClose: () => void;
 }
+
+const appVersion = Constants.expoConfig?.version ?? '';
+const buildNumber = Constants.expoConfig?.ios?.buildNumber ?? '';
 
 export function SettingsModal({ visible, onClose }: Props) {
   const { t, i18n } = useTranslation();
@@ -181,6 +185,11 @@ export function SettingsModal({ visible, onClose }: Props) {
             <Text style={styles.linkChevron}>›</Text>
           </TouchableOpacity>
         </View>
+
+        {/* バージョン情報 */}
+        <Text style={styles.versionText}>
+          {t('settings.version')} {appVersion} ({buildNumber})
+        </Text>
       </View>
     </Modal>
   );
@@ -327,5 +336,11 @@ const styles = StyleSheet.create({
   importText: {
     fontSize: 15,
     color: '#FF3B30',
+  },
+  versionText: {
+    fontSize: 12,
+    color: '#C7C7CC',
+    textAlign: 'center',
+    marginBottom: 8,
   },
 });

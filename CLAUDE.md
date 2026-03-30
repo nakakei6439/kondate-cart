@@ -67,6 +67,21 @@ COMMANDS.md                      ← 一覧への追記（必須）
 - **App Store 審査と AdMob 審査は別々のプロセス**。どちらか一方が完了しても、もう一方が未完了なら本番では動作しない
 - app-ads.txt（`https://nakakei6439.github.io/app-ads.txt`）は複数アプリで共通・変更不要
 
+## バージョンアップ手順（必須）
+
+`app.json` のバージョンを変更しても iOS ネイティブファイルは**自動更新されない**。
+必ず以下の3ファイルをすべて同時に変更すること。変更漏れがあると IPA に古いバージョンが埋め込まれ、TestFlight 提出で 409 エラーになる。
+
+| ファイル | 変更箇所 |
+| --- | --- |
+| `app.json` | `expo.version` / `expo.ios.buildNumber` |
+| `ios/app/Info.plist` | `CFBundleShortVersionString` / `CFBundleVersion` |
+| `ios/app.xcodeproj/project.pbxproj` | `MARKETING_VERSION` / `CURRENT_PROJECT_VERSION`（該当箇所が複数ある場合はすべて） |
+
+> 実際にIPA に埋め込まれるバージョンは `ios/app/Info.plist` の値。`app.json` だけ変えても反映されない。
+
+---
+
 ## Git ルール
 
 - `main` は常にリリース可能な状態を維持

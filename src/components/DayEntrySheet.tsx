@@ -258,33 +258,38 @@ export default function DayEntrySheet({
                   <Text style={styles.label}>{t('entry.dish', { number: dishIdx + 1 })}</Text>
 
                   {/* Dish name */}
-                  <View style={styles.dishNameRow}>
-                    <TextInput
-                      style={styles.dishNameInput}
-                      value={dish.dishName}
-                      onChangeText={(v) => updateDishName(dishIdx, v)}
-                      placeholder={t('entry.dishPlaceholder')}
-                      placeholderTextColor="#C7C7CC"
-                      returnKeyType="done"
-                    />
-                    <TouchableOpacity
-                      style={styles.historyBtn}
-                      onPress={() => toggleHistory(dishIdx)}
-                    >
-                      <Text style={styles.historyBtnText}>{t('entry.historyBtn')}</Text>
-                    </TouchableOpacity>
-                    {dayDishes.length > 1 && (
+                  <Swipeable
+                    renderRightActions={() => (
                       <TouchableOpacity
-                        style={styles.removeDishIconBtn}
+                        style={[styles.swipeDeleteBtn, { borderRadius: 10 }]}
                         onPress={() => {
                           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                           removeDish(dishIdx);
                         }}
                       >
-                        <Ionicons name="trash-outline" size={18} color="#FF3B30" />
+                        <Text style={styles.swipeDeleteText}>{t('common.delete')}</Text>
                       </TouchableOpacity>
                     )}
-                  </View>
+                    enabled={dayDishes.length > 1}
+                    overshootRight={false}
+                  >
+                    <View style={styles.dishNameRow}>
+                      <TextInput
+                        style={styles.dishNameInput}
+                        value={dish.dishName}
+                        onChangeText={(v) => updateDishName(dishIdx, v)}
+                        placeholder={t('entry.dishPlaceholder')}
+                        placeholderTextColor="#C7C7CC"
+                        returnKeyType="done"
+                      />
+                      <TouchableOpacity
+                        style={styles.historyBtn}
+                        onPress={() => toggleHistory(dishIdx)}
+                      >
+                        <Text style={styles.historyBtnText}>{t('entry.historyBtn')}</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </Swipeable>
 
                   {/* History list */}
                   {activeHistoryIdx === dishIdx && filteredHistory.length > 0 && (
@@ -448,14 +453,6 @@ const styles = StyleSheet.create({
     marginBottom: 6,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
-  },
-  removeDishIconBtn: {
-    width: 44,
-    height: 44,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#FFF2F2',
-    borderRadius: 10,
   },
   dishDivider: {
     height: 1,

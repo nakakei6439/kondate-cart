@@ -10,7 +10,6 @@
 - **目的:** 週単位の夕食献立を管理し、買い物リストを自動生成するiOSアプリ
 - **ターゲット:** 食費節約・衝動買い防止を望む日本の一般家庭・一人暮らし
 - **マネタイズ:** 無料＋広告表示、広告非表示のIAP（¥300、買い切り）
-- **収益目標:** 3〜4ヶ月でMAU 400〜600、月収¥10,000
 - **Bundle ID:** `com.nakakei6439.kondatecart`
 - **Expo Project ID:** `09de0c14-0ba0-48e3-b88e-75ba1a52a4c4`
 
@@ -22,13 +21,16 @@
 | --- | --- | --- | --- |
 | フレームワーク | React Native (Expo) | SDK 54 | クロスプラットフォーム対応、OTAアップデート |
 | 言語 | TypeScript | 5.3.3 | 型安全、補完効率化 |
-| ナビゲーション | Expo Router | 6.0.23 | ファイルベースルーティング、設定が最小限 |
-| 状態管理 | Zustand | 5.0.0 | 軽量、ボイラープレートなし、ReduxやContextより簡潔 |
+| ナビゲーション | Expo Router | 6.x | ファイルベースルーティング、設定が最小限 |
+| 状態管理 | Zustand | 5.0.0 | 軽量、ボイラープレートなし |
 | 永続化 | AsyncStorage | 2.2.0 | オフライン対応、このスケールでは十分 |
-| IAP | react-native-purchases (RevenueCat) | 9.11.2 | iOS/Android統合管理、ダッシュボードで把握しやすい |
-| 広告 | react-native-google-mobile-ads | 16.2.1 | AdMob公式対応、インタースティシャル実装が容易 |
-| 触覚フィードバック | expo-haptics | 15.0.8 | iOS標準のHapticをシンプルに呼び出せる |
-| UUID生成 | expo-crypto | 15.0.8 | ネイティブのランダム性を使ったUUID生成 |
+| 多言語対応 | i18next / react-i18next | — | 5言語対応（日・英・中・韓・西） |
+| 端末言語検出 | expo-localization | — | 起動時に端末ロケールを取得 |
+| IAP | react-native-purchases (RevenueCat) | 9.x | iOS/Android統合管理 |
+| 広告 | react-native-google-mobile-ads | 16.x | AdMob公式対応 |
+| レビュー誘導 | expo-store-review | — | SKStoreReviewAPI |
+| 触覚フィードバック | expo-haptics | 15.x | iOS標準のHapticをシンプルに呼び出せる |
+| UUID生成 | expo-crypto | 15.x | ネイティブのランダム性を使ったUUID生成 |
 
 ---
 
@@ -43,10 +45,6 @@
 - EAS CLI をグローバルインストール
   ```sh
   npm install -g eas-cli
-  ```
-- Expoアカウント作成・ログイン
-  ```sh
-  eas login
   ```
 - 新規Expoプロジェクトを作成
   ```sh
@@ -77,19 +75,9 @@
 5. UIコンポーネント（`src/components/`）
 6. Expo Router画面（`app/index.tsx`, `shopping.tsx`, `history.tsx`）
 
-#### 開発サーバー起動
-
-```sh
-# 通常の開発（Expo Go対応）
-PATH="/Users/nakagawakeita/node-bin/bin:$PATH" npx expo start
-
-# Development Build 用
-PATH="/Users/nakagawakeita/node-bin/bin:$PATH" npx expo start --dev-client
-```
-
 ---
 
-### Phase 2: 収益化実装
+### Phase 2: 収益化実装（v1.0.0）
 
 #### Google AdMob セットアップ
 
@@ -98,129 +86,108 @@ PATH="/Users/nakagawakeita/node-bin/bin:$PATH" npx expo start --dev-client
 - 取得した ID:
   - AdMob アプリ ID: `ca-app-pub-6037843763000573~3751863813`
   - インタースティシャル広告ユニット ID: `ca-app-pub-6037843763000573/8286005190`
-- `app.json` の `plugins` に以下を追加:
-  ```json
-  [
-    "react-native-google-mobile-ads",
-    {
-      "iosAppId": "ca-app-pub-6037843763000573~3751863813"
-    }
-  ]
-  ```
 
 #### RevenueCat セットアップ
 
-- [app.revenuecat.com](https://app.revenuecat.com) でアカウント作成（無料 〜 $2,500/月まで）
-- プロジェクト作成 → iOSアプリ登録
-- App Store Connect API Key を取得・登録
-  - Key ID: `Q5L256WMRM`（Issuer IDも合わせて登録）
-- Product を登録（App Store ConnectのProduct IDと完全一致が必要）
-- Entitlement を作成（ID: `Kondate Cart Premium`）
-- Offering を作成 → "Current" に設定
-- Package を作成して Offering に紐づけ
+- [app.revenuecat.com](https://app.revenuecat.com) でアカウント作成
+- Product → Entitlement（ID: `Kondate Cart Premium`）→ Offering → Package の順で設定
+- App Store Connect API Key を取得・登録（Key ID: `Q5L256WMRM`）
 
 #### App Store Connect IAP セットアップ
 
-- [appstoreconnect.apple.com](https://appstoreconnect.apple.com) でアプリ登録
 - In-App Purchase を作成:
   - 種別: **非消耗型**（Non-Consumable）
   - 価格: Tier 3（¥300）
-  - ステータスが「準備完了」以上である必要あり
 - 有料アプリ契約・銀行口座・税務情報を登録（IAP動作の必須条件）
-- サンドボックステスターを作成（存在しないメールアドレスを使用）
 
 #### EAS Build 設定
 
-- プロジェクトを EAS に紐づけ:
-  ```sh
-  eas init
-  ```
-- `eas.json` を作成:
-  ```json
-  {
-    "build": {
-      "development": {
-        "developmentClient": true,
-        "distribution": "internal"
-      },
-      "preview": {
-        "distribution": "internal"
-      },
-      "production": {}
-    }
-  }
-  ```
+- `eas.json` を作成し、development / preview / production プロファイルを定義
+- ローカルビルド用スクリプト（`scripts/build-ios.sh`）を整備
+  - `eas build --local` モードと `xcodebuild` モードを選択可能
+  - 出力先: `dist/ipa/app-{profile}.ipa`
 
 ---
 
-### Phase 3: ビルド・テスト・申請
+### Phase 3: テスト基盤整備
 
-#### Development Build 作成（IAP動作確認用）
-
-```sh
-# Development Build（シミュレータ or 実機用）
-npx eas build --profile development --platform ios
-```
-
-> **重要:** `npx expo start` だけでは `app.json` のプラグイン変更が反映されない。IAP・広告ライブラリの動作確認にはDevelopment Build が必須。
-
-#### サンドボックステスト手順
-
-1. iPhone の設定 → App Store → サンドボックスアカウント にテスターでサインイン（iCloudとは別）
-2. Development Build をインストール
-3. アプリ内でIAP購入フローを実行
-4. ダイアログに `[環境: サンドボックス]` と表示されれば正常
-5. テスト後のリセット: iPhone の設定 → App Store → Sandbox Account → 購入をリセット
-
-#### 本番ビルド・App Store申請
-
-```sh
-# 本番ビルド
-npx eas build --profile production --platform ios
-
-# App Store申請
-npx eas submit --platform ios
-```
+- **Jest ユニットテスト** 38件: ストア・ストレージ・ユーティリティをカバー
+- **Maestro E2E テスト** 5フロー: 基本的な献立登録・買い物リスト生成・履歴操作を自動化
 
 ---
 
-## CLIコマンド一覧
+### Phase 4: ローカライズ・UX改善（v1.0.3）
 
-| コマンド | 目的 | 使用タイミング |
-| --- | --- | --- |
-| `npx create-expo-app <name> --template blank-typescript` | プロジェクト作成 | Phase 0（初回のみ） |
-| `npm install --legacy-peer-deps` | 依存ライブラリインストール | 初回・ライブラリ追加後 |
-| `npx expo start` | 開発サーバー起動（Expo Go） | MVP開発中 |
-| `npx expo start --dev-client` | 開発サーバー起動（Dev Build） | IAP・広告動作確認時 |
-| `eas login` | EASへのログイン | 初回セットアップ |
-| `eas init` | プロジェクトをEASに紐づけ | 初回セットアップ |
-| `eas build --profile development --platform ios` | Development Build作成 | IAP・広告テスト前 |
-| `eas build --profile preview --platform ios` | Preview Build作成 | TestFlight配信前 |
-| `eas build --profile production --platform ios` | 本番ビルド作成 | App Store申請前 |
-| `eas submit --platform ios` | App Storeへ申請 | 本番ビルド完成後 |
-| `eas update` | OTAアップデート配信 | JS変更のみの軽微な更新時 |
+#### 多言語対応（5言語）
+
+- `i18next` / `react-i18next` を導入
+- `expo-localization` で端末ロケールを取得して自動適用
+- 対応言語: 日本語（ja）・英語（en）・中国語（zh）・韓国語（ko）・スペイン語（es）
+- 翻訳ファイルは `src/i18n/locales/{lang}.json` に配置
+
+#### レビュープロンプト
+
+- `expo-store-review` を使用した `useReviewPrompt.ts` フックを実装
+- 一定条件を満たしたタイミングで SKStoreReviewAPI を呼び出す
+
+#### エクスポート機能強化
+
+- `exportStorage.ts` を整備し、全データ（献立・料理履歴）を JSON で出力
+- ShareSheet 経由でファイル保存・共有が可能に
+
+---
+
+### Phase 5: バグ修正・UI改善（v1.0.4）
+
+#### 1日複数料理対応
+
+- データモデルを `DayEntry`（1料理）→ `DayRecord`（複数料理: `dishes[]`）に変更
+- `DayEntrySheet` に料理追加ボタンを実装
+- 料理行を左スワイプで削除できる UI を追加（複数登録時のみ有効）
+
+#### スワイプ競合バグの修正
+
+- **問題:** `WeekCalendar` で曜日行をスワイプ削除しようとすると、タップとして認識されてシートが開くことがあった
+- **解決:** `swipeActiveRef = useRef<Map<DayKey, boolean>>(new Map())` パターンを導入。`onSwipeableWillOpen` / `onSwipeableClose` で状態を追跡し、スワイプ中はタップを無視する
+
+#### DishEditSheet のジェスチャー競合バグの修正
+
+- **問題:** 料理履歴編集シートで材料を削除しようとスワイプすると、まれにシート自体が閉じてしまう
+- **根本原因:** `GestureHandlerRootView` がオーバーレイの `TouchableWithoutFeedback` も内包していたため、RNGH のジェスチャーイベントがオーバーレイに漏れていた
+- **解決:** `GestureHandlerRootView` のスコープをシートのみに限定。オーバーレイを RNGH スコープ外の兄弟要素として配置
+
+#### DishEditSheet 削除ボタン追加
+
+- 料理履歴編集シートのフッターに「削除」ボタンを追加（`handleDelete()` は実装済みだったが UI がなかった）
+- 削除確認アラートを表示してから DishRecord を完全削除
+
+#### バージョン表示
+
+- 設定モーダルにアプリバージョンとビルド番号を表示
+- `Constants.expoConfig?.version` / `Constants.expoConfig?.ios?.buildNumber` を使用
 
 ---
 
 ## 外部サービス一覧
 
-| サービス | 用途 | URL | コスト |
-| --- | --- | --- | --- |
-| Apple Developer Program | App Store配信、IAP | developer.apple.com | ¥14,800/年 |
-| App Store Connect | アプリ管理、IAP設定 | appstoreconnect.apple.com | 無料 |
-| RevenueCat | IAP管理・分析 | app.revenuecat.com | 無料（〜$2,500/月） |
-| Google AdMob | 広告配信 | admob.google.com | 無料（収益分配） |
-| Expo / EAS | ビルド・配信 | expo.dev | 無料（個人プラン） |
-| GitHub | ソース管理 | github.com | 無料 |
+| サービス | 用途 | コスト |
+| --- | --- | --- |
+| Apple Developer Program | App Store配信、IAP | ¥14,800/年 |
+| App Store Connect | アプリ管理、IAP設定 | 無料 |
+| RevenueCat | IAP管理・分析 | 無料（〜$2,500/月） |
+| Google AdMob | 広告配信 | 無料（収益分配） |
+| Expo / EAS | ビルド・配信 | 無料（個人プラン） |
+| GitHub | ソース管理 | 無料 |
 
 ---
 
 ## ライブラリ選定の理由
 
-- **Expo Router（over React Navigation）:** ファイルベースルーティングで設定が最小限。追加の Navigator 定義が不要。
-- **Zustand（over Redux/Context）:** 1ファイルで完結するストア定義、ボイラープレートなし、パフォーマンスも十分。
-- **AsyncStorage（over SQLite/MMKV）:** 今のデータ規模ではオーバーエンジニアリング不要。完全オフライン対応。
-- **RevenueCat（over StoreKit直接実装）:** iOS/Android両対応、ダッシュボードで購入状況把握、Sandbox/本番の切り替えが自動。
+- **Expo Router（over React Navigation）:** ファイルベースルーティングで設定が最小限。
+- **Zustand（over Redux/Context）:** 1ファイルで完結するストア定義、ボイラープレートなし。
+- **AsyncStorage（over SQLite/MMKV）:** 今のデータ規模ではオーバーエンジニアリング不要。
+- **RevenueCat（over StoreKit直接実装）:** iOS/Android両対応、Sandbox/本番の切り替えが自動。
+- **i18next（over 自前実装）:** 言語検出・フォールバック・複数形対応が標準装備。
 - **UIライブラリなし（over NativeBase等）:** iOSのデザインガイドラインに沿った純粋なStyleSheetで完全制御を優先。
 
 ---
@@ -229,108 +196,44 @@ npx eas submit --platform ios
 
 ### 1. Expo Go で IAP が動作しない
 
-- **原因:** Expo Go はサンドボックス環境のため、ネイティブモジュール（react-native-purchases）が利用不可
-- **解決:** Development Build を使用する（`eas build --profile development`）
+- **原因:** Expo Go はサンドボックス環境のため、ネイティブモジュールが利用不可
+- **解決:** Development Build を使用する
 
-### 2. `app.json` に `react-native-purchases` プラグインが未登録
-
-- **原因:** プラグインを追記せずにビルドしたため、ネイティブコードがリンクされない
-- **解決:** `app.json` の `plugins` に `"react-native-purchases"` を追加してから再ビルド
-  ```json
-  "plugins": [
-    "expo-router",
-    "expo-updates",
-    "react-native-purchases",
-    ["react-native-google-mobile-ads", { ... }]
-  ]
-  ```
-
-### 3. Expo Router が余分なタブを生成する
+### 2. Expo Router が余分なタブを生成する
 
 - **原因:** `app/` フォルダ内にコンポーネントファイルを置くと、Expo Routerがそれをページとして認識する
 - **解決:** UIコンポーネントはすべて `src/components/` に配置する
 
-### 4. Entitlement ID の不一致でIAP認証失敗
+### 3. Entitlement ID の不一致でIAP認証失敗
 
 - **原因:** RevenueCatのEntitlement IDとコード内の文字列が大文字小文字・スペース含め完全一致していなかった
 - **解決:** Entitlement ID `Kondate Cart Premium` を RevenueCat・コード両方で完全一致させる
 
-### 5. IAPが動作しない（有料契約未登録）
+### 4. `expo-file-system` v19 で旧APIが見つからない
 
-- **原因:** App Store Connectで銀行口座・税務情報・有料アプリ契約が未完了
-- **解決:** App Store Connect → 契約 → 有料アプリ契約を完了させてから再テスト
+- **原因:** v19 から `cacheDirectory` や `EncodingType` 等の旧APIが廃止
+- **解決:** `import * as FileSystem from 'expo-file-system/legacy'` を使用する
 
-### 6. `npm install` が依存関係エラーで失敗
+### 5. `npm install` が依存関係エラーで失敗
 
 - **原因:** peer dependencies の競合
 - **解決:** `npm install --legacy-peer-deps` で回避
+
+### 6. DishEditSheet でスワイプ中にシートが閉じる
+
+- **原因:** `GestureHandlerRootView` がオーバーレイの `TouchableWithoutFeedback` も内包していたため、RNGH ジェスチャーがオーバーレイに漏れていた
+- **解決:** `GestureHandlerRootView` のスコープをシートコンテンツのみに限定し、オーバーレイを兄弟要素として配置する
 
 ---
 
 ## 設計上の重要な決定事項
 
-- **Copy-on-save:** 献立に料理を登録する際、DishRecord の食材をそのままコピーする。こうすることで、過去の料理履歴を変更しても今週の献立には影響しない
+- **Copy-on-save:** 献立に料理を登録する際、DishRecord の食材をそのままコピーする。過去の料理履歴を変更しても今週の献立には影響しない
 - **ISO 8601 週キー:** `2026-W09` 形式のキーでAsyncStorageを管理。日付計算が一貫して行える
 - **週の開始日は月曜日:** 日本の慣習に合わせてISO週の月曜始まりを採用
 - **オフライン専用:** ネットワーク通信なし（広告・IAP除く）。ユーザーデータはすべてデバイス内に保存
 - **ポートレートオンリー:** 献立・買い物リスト用途では縦画面のみ想定
-
----
-
-## 現在の状況・保留中のタスク
-
-### 現状（2026年3月時点）
-
-- App Store 審査申請済み → **審査通過待ち**
-- `app.json` に `react-native-purchases` プラグインが未登録（既知の問題）
-- **購入テスト・購入復元テスト が未実施**（審査通過後に実施予定）
-
-### 審査通過後にやること（チェックリスト）
-
-#### Step 1: app.json プラグイン修正
-
-```json
-"plugins": [
-  "expo-router",
-  "expo-updates",
-  "react-native-purchases",
-  ["react-native-google-mobile-ads", { "iosAppId": "ca-app-pub-6037843763000573~3751863813" }]
-]
-```
-
-#### Step 2: Development Build を再作成
-
-```sh
-npx eas build --profile development --platform ios
-```
-
-> プラグイン変更はビルドし直さないと反映されない
-
-#### Step 3: 購入テスト（サンドボックス）
-
-1. iPhone の **設定 → App Store → サンドボックスアカウント** にテスターでサインイン
-2. Development Build をインストール
-3. アプリを開き、設定から「広告を削除（¥300）」をタップ
-4. ダイアログに `[環境: サンドボックス]` と表示されることを確認
-5. 購入を完了 → **広告が非表示になることを確認**
-
-#### Step 4: 購入復元テスト（サンドボックス）
-
-1. アプリをアンインストール
-2. Development Build を再インストール
-3. 設定から「購入を復元」をタップ
-4. **広告が再び非表示になることを確認**
-
-#### Step 5: サンドボックスのリセット（テスト後の後片付け）
-
-- iPhone の 設定 → App Store → Sandbox Account → 購入をリセット
-
-#### Step 6: 本番ビルド作成・再申請
-
-```sh
-npx eas build --profile production --platform ios
-npx eas submit --platform ios
-```
+- **GestureHandlerRootView のスコープ管理:** モーダル内で Swipeable を使う場合、オーバーレイの TouchableWithoutFeedback を RNGH スコープ外に置かないとジェスチャーが漏れる
 
 ---
 
@@ -338,8 +241,7 @@ npx eas submit --platform ios
 
 | ファイル | 内容 |
 | --- | --- |
-| [REQUIREMENTS.md](./REQUIREMENTS.md) | MVP要件定義（What を定義） |
-| [DEV_FLOW.md](./DEV_FLOW.md) | 開発手順チェックリスト（Step by Step） |
-| [IAP_TROUBLESHOOT.md](./IAP_TROUBLESHOOT.md) | IAP実装の詳細トラブルシューティング |
-| [microbusiness_plan.md](./microbusiness_plan.md) | ビジネス計画・収益化戦略 |
+| [../REQUIREMENTS.md](../REQUIREMENTS.md) | 要件定義（データモデル・機能仕様） |
+| [../DEVGUIDE.md](../DEVGUIDE.md) | 環境構築・開発フロー・設定値 |
+| [../COMMANDS.md](../COMMANDS.md) | Claude Code スラッシュコマンド一覧 |
 | **DEV_HISTORY.md** | **本ファイル：実際の開発履歴記録** |

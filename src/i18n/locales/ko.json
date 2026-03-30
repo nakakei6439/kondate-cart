@@ -125,6 +125,7 @@
     "import": "데이터 가져오기（덮어쓰기）",
     "otherSection": "기타",
     "privacyPolicy": "개인정보 처리방침",
+    "version": "버전",
     "exportErrorTitle": "내보내기 오류",
     "exportErrorDefault": "내보내기에 실패했습니다",
     "importConfirmTitle": "데이터 가져오기",

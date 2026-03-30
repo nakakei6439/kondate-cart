@@ -125,6 +125,7 @@
     "import": "データをインポート（上書き）",
     "otherSection": "その他",
     "privacyPolicy": "プライバシーポリシー",
+    "version": "バージョン",
     "exportErrorTitle": "エクスポートエラー",
     "exportErrorDefault": "エクスポートに失敗しました",
     "importConfirmTitle": "データをインポート",
